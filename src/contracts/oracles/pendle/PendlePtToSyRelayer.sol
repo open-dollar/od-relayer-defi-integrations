@@ -29,6 +29,7 @@ contract PendlePtToSyRelayer {
     twapDuration = _twapDuration;
 
     (SY, PT,) = market.readTokens();
+
     symbol = string(abi.encodePacked(PT.symbol(), ' / ', SY.symbol()));
 
     // test if oracle is ready
