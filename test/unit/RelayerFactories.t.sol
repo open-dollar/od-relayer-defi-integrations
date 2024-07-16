@@ -15,6 +15,8 @@ import {PendleRelayerFactory} from '@contracts/factories/pendle/PendleRelayerFac
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {DenominatedOracleFactory} from '@contracts/factories/DenominatedOracleFactory.sol';
 import {DenominatedOracleChild} from '@contracts/factories/DenominatedOracleChild.sol';
+import {IDelayedOracleFactory} from '@interfaces/factories/IDelayedOracleFactory.sol';
+import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {MAINNET_PENDLE_ORACLE, MAINNET_PENDLE_RETH_MARKET} from '@script/Registry.s.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IPendleRelayerFactory} from '@interfaces/factories/IPendleRelayerFactory.sol';
@@ -38,6 +40,9 @@ abstract contract Base is DSTestPlus {
 
   DenominatedOracleFactory denominatedOracleFactory;
   IBaseOracle denominatedOracleChild;
+
+  IDelayedOracleFactory delayedOracleFactory;
+  IBaseOracle delayedOracleChild;
 
   address mockAggregator = mockContract('ChainlinkAggregator');
 
@@ -386,13 +391,41 @@ contract Unit_DenominatedPriceOracleFactory_DeployDenominatedOracle is Base {
   }
 }
 
-contract Unit_PendleRelayerFactory_DeployPendleOracles is Base {
+contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
+  address mainnetAuthorizedAccount = 0xF78dA2A37049627636546E0cFAaB2aD664950917;
   IPendleRelayerFactory public pendleFactory;
 
   function setUp() public virtual override {
     super.setUp();
     vm.createSelectFork(vm.envString('ARB_MAINNET_RPC'));
-    pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
+    delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
+    chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
+    denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
+     pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
+    label(address(delayedOracleFactory), 'DelayedOracleFactory');
+    label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
+    label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
+  }
+
+  function test_DeployEzEthRelayer() public {
+    vm.startPrank(mainnetAuthorizedAccount);
+    IBaseOracle _ezEthEthPriceFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
+      MAINNET_CHAINLINK_EZETH_ETH_FEED,
+      MAINNET_CHAINLINK_SEQUENCER_FEED,
+      MAINNET_ORACLE_DELAY,
+      MAINNET_CHAINLINK_L2VALIDITY_GRACE_PERIOD
+    );
+
+    IBaseOracle _ezEthUsdOracle = denominatedOracleFactory.deployDenominatedOracle(
+      _ezEthEthPriceFeed, IBaseOracle(MAINNET_CHAINLINK_ETH_USD_RELAYER), false
+    );
+
+    IBaseOracle _ezEthUsdDelayedOracle = delayedOracleFactory.deployDelayedOracle(_ezEthUsdOracle, MAINNET_ORACLE_DELAY);
+
+    string memory _ezEthSymbol = _ezEthUsdDelayedOracle.symbol(); // "(EZETH / ETH) * (ETH / USD)"
+    vm.stopPrank();
+    assertEq(_ezEthSymbol, '(ezETH / ETH) * (ETH / USD)');
+  
   }
 
   function test_Deploy_PendleFactory() public {
