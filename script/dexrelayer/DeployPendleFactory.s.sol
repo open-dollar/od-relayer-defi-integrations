@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.8.26;
 
 import '@script/Registry.s.sol';
 import {Script} from 'forge-std/Script.sol';
@@ -22,9 +22,7 @@ contract DeployPendleFactory is Script {
   PendleRelayerFactory public pendleRelayerFactory;
 
   function run() public {
-
-    uint256 pk = vm.envUint();
-    vm.startBroadcast(pk);
+    vm.startBroadcast();
     pendleRelayerFactory = new PendleRelayerFactory();
     vm.stopBroadcast();
   }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.8.26;
 
 import '@script/Registry.s.sol';
 import {Script} from 'forge-std/Script.sol';
@@ -86,10 +86,10 @@ contract DeployRethPtToSyPendleRelayerMainnet is CommonMainnet {
       _pendleRethPtToSyFeed, IBaseOracle(MAINNET_DENOMINATED_RETH_USD_ORACLE), false
     );
 
-    IBaseOracle __rethToUSDOracleDelayedOracle =
-      delayedOracleFactory.deployDelayedOracle(_wstethyToUSDOracle, MAINNET_ORACLE_DELAY);
+    IBaseOracle _rethToUSDOracleDelayedOracle =
+      delayedOracleFactory.deployDelayedOracle(_rethToUSDOracle, MAINNET_ORACLE_DELAY);
 
-    __rethToUSDOracleDelayedOracle.symbol();
+    _rethToUSDOracleDelayedOracle.symbol();
     vm.stopBroadcast();
   }
 }
@@ -108,7 +108,7 @@ contract DeployWstethPtToSyPendleRelayerMainnet is CommonMainnet {
     );
 
     IBaseOracle _wstethToUSDOracle = denominatedOracleFactory.deployDenominatedOracle(
-      _pendleRethPtToSyFeed, IBaseOracle(MAINNET_DENOMINATED_WSTETH_USD_ORACLE), false
+      _pendleWstethPtToSyFeed, IBaseOracle(MAINNET_DENOMINATED_WSTETH_USD_ORACLE), false
     );
 
     IBaseOracle _wstethToUSDDelayedOracle =

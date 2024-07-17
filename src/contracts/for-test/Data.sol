@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.8.26;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IChainlinkRelayerFactory} from '@interfaces/factories/IChainlinkRelayerFactory.sol';
-import {ICamelotRelayerFactory} from '@interfaces/factories/ICamelotRelayerFactory.sol';
 import {IDenominatedOracleFactory} from '@interfaces/factories/IDenominatedOracleFactory.sol';
 import {IChainlinkRelayer} from '@interfaces/oracles/IChainlinkRelayer.sol';
-import {ICamelotRelayer} from '@interfaces/oracles/ICamelotRelayer.sol';
 import {IDenominatedOracle} from '@interfaces/oracles/IDenominatedOracle.sol';
 
 contract Data {
   // Tokens
   address public tokenA;
   address public tokenB;
-
 
   // Factories
   IChainlinkRelayerFactory public chainlinkRelayerFactory;
@@ -22,7 +19,6 @@ contract Data {
   // Relayers
   IChainlinkRelayer public chainlinkRelayer;
   IDenominatedOracle public denominatedOracle;
-}
 
   // function generateTickParams() public view returns (int24 bottomTick, int24 topTick) {
   //   (, int24 tick,,,,,) = pool.globalState();
@@ -35,8 +31,6 @@ contract Data {
     tokenA = _t0;
     tokenB = _t1;
   }
-
- 
 
   function modifyFactory(bytes32 _param, address _factory) public {
     if (_param == 'chainlinkRelayerFactory') chainlinkRelayerFactory = IChainlinkRelayerFactory(_factory);

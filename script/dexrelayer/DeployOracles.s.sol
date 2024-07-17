@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.8.26;
 
 import '@script/Registry.s.sol';
 import {Script} from 'forge-std/Script.sol';
@@ -29,18 +29,18 @@ contract DeployOracles is Script {
   function run() public {
     vm.startBroadcast(vm.envUint('ARB_SEPOLIA_PK'));
 
-    chainlinkRelayerFactory = data.chainlinkRelayerFactory();
-    denominatedOracleFactory = data.denominatedOracleFactory();
+    // chainlinkRelayerFactory = data.chainlinkRelayerFactory();
+    // denominatedOracleFactory = data.denominatedOracleFactory();
 
-    // deploy chainlink relayer
-    chainlinkEthUSDPriceFeed =
-      chainlinkRelayerFactory.deployChainlinkRelayer(SEPOLIA_CHAINLINK_ETH_USD_FEED, ORACLE_INTERVAL_TEST);
-    data.modifyOracle(bytes32('chainlinkRelayer'), address(chainlinkEthUSDPriceFeed));
+    // // deploy chainlink relayer
+    // chainlinkEthUSDPriceFeed =
+    //   chainlinkRelayerFactory.deployChainlinkRelayer(SEPOLIA_CHAINLINK_ETH_USD_FEED, ORACLE_INTERVAL_TEST);
+    // data.modifyOracle(bytes32('chainlinkRelayer'), address(chainlinkEthUSDPriceFeed));
 
-    // deploy denominated oracle
-    denominatedOracle =
-      denominatedOracleFactory.deployDenominatedOracle(chainlinkEthUSDPriceFeed, camelotRelayer, false);
-    data.modifyOracle(bytes32('denominatedOracle'), address(denominatedOracle));
+    // // deploy denominated oracle
+    // denominatedOracle =
+    //   denominatedOracleFactory.deployDenominatedOracle(chainlinkEthUSDPriceFeed, camelotRelayer, false);
+    // data.modifyOracle(bytes32('denominatedOracle'), address(denominatedOracle));
 
     vm.stopBroadcast();
   }
