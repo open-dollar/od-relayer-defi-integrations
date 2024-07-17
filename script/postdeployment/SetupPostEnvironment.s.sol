@@ -4,8 +4,6 @@ pragma solidity 0.7.6;
 import 'forge-std/console2.sol';
 import '@script/Registry.s.sol';
 import {CommonSepolia} from '@script/Common.s.sol';
-import {IAlgebraFactory} from '@algebra-core/interfaces/IAlgebraFactory.sol';
-import {IAlgebraPool} from '@algebra-core/interfaces/IAlgebraPool.sol';
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {MintableERC20} from '@contracts/for-test/MintableERC20.sol';
 
@@ -21,23 +19,23 @@ contract SetupPostEnvironment is CommonSepolia {
   function run() public {
     vm.startBroadcast(vm.envUint('ARB_SEPOLIA_DEPLOYER_PK'));
 
-    algebraFactory.createPool(SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH);
-    address _pool = algebraFactory.poolByPair(SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH);
+    // algebraFactory.createPool(SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH);
+    // address _pool = algebraFactory.poolByPair(SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH);
 
-    uint160 _sqrtPriceX96 = initialPrice(INIT_OD_AMOUNT, INIT_WETH_AMOUNT, _pool);
-    IAlgebraPool(_pool).initialize(uint160(_sqrtPriceX96));
+    // uint160 _sqrtPriceX96 = initialPrice(INIT_OD_AMOUNT, INIT_WETH_AMOUNT, _pool);
+    // IAlgebraPool(_pool).initialize(uint160(_sqrtPriceX96));
 
-    IBaseOracle _odWethOracle = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH, uint32(ORACLE_INTERVAL_TEST)
-    );
+    // IBaseOracle _odWethOracle = camelotRelayerFactory.deployAlgebraRelayer(
+    //   SEPOLIA_ALGEBRA_FACTORY, SEPOLIA_SYSTEM_COIN, SEPOLIA_WETH, uint32(ORACLE_INTERVAL_TEST)
+    // );
 
-    IBaseOracle chainlinkEthUSDPriceFeed =
-      chainlinkRelayerFactory.deployChainlinkRelayer(SEPOLIA_CHAINLINK_ETH_USD_FEED, ORACLE_INTERVAL_TEST);
+    // IBaseOracle chainlinkEthUSDPriceFeed =
+    //   chainlinkRelayerFactory.deployChainlinkRelayer(SEPOLIA_CHAINLINK_ETH_USD_FEED, ORACLE_INTERVAL_TEST);
 
-    // deploy systemOracle
-    denominatedOracleFactory.deployDenominatedOracle(_odWethOracle, chainlinkEthUSDPriceFeed, false);
+    // // deploy systemOracle
+    // denominatedOracleFactory.deployDenominatedOracle(_odWethOracle, chainlinkEthUSDPriceFeed, false);
 
-    revokeFactories();
+    // revokeFactories();
 
     /**
      * note oracleRelayer will be set to systemOracle in odContracts post deploy script

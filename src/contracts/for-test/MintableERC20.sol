@@ -2,7 +2,6 @@
 pragma solidity 0.7.6;
 
 import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
-import {IERC20Metadata} from '@algebra-periphery/interfaces/IERC20Metadata.sol';
 
 /**
  * @title  MintableERC20

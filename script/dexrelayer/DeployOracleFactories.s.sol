@@ -3,7 +3,6 @@ pragma solidity 0.7.6;
 
 import '@script/Registry.s.sol';
 import {Script} from 'forge-std/Script.sol';
-import {CamelotRelayerFactory} from '@contracts/factories/CamelotRelayerFactory.sol';
 import {ChainlinkRelayerFactory} from '@contracts/factories/ChainlinkRelayerFactory.sol';
 import {DenominatedOracleFactory} from '@contracts/factories/DenominatedOracleFactory.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
@@ -19,7 +18,6 @@ contract MockDeployFactories is Script {
   Data public data = Data(RELAYER_DATA);
 
   ChainlinkRelayerFactory public chainlinkRelayerFactory;
-  CamelotRelayerFactory public camelotRelayerFactory;
   DenominatedOracleFactory public denominatedOracleFactory;
 
   /**
@@ -28,15 +26,9 @@ contract MockDeployFactories is Script {
   function run() public {
     vm.startBroadcast(vm.envUint('ARB_SEPOLIA_DEPLOYER_PK'));
     chainlinkRelayerFactory = new ChainlinkRelayerFactory();
-    camelotRelayerFactory = new CamelotRelayerFactory();
     denominatedOracleFactory = new DenominatedOracleFactory();
 
-    IAuthorizable(address(chainlinkRelayerFactory)).addAuthorization(vm.envAddress('ARB_SEPOLIA_ADDR'));
-    IAuthorizable(address(camelotRelayerFactory)).addAuthorization(vm.envAddress('ARB_SEPOLIA_ADDR'));
-    IAuthorizable(address(denominatedOracleFactory)).addAuthorization(vm.envAddress('ARB_SEPOLIA_ADDR'));
-
     data.modifyFactory(bytes32('chainlinkRelayerFactory'), address(chainlinkRelayerFactory));
-    data.modifyFactory(bytes32('camelotRelayerFactory'), address(camelotRelayerFactory));
     data.modifyFactory(bytes32('denominatedOracleFactory'), address(denominatedOracleFactory));
     vm.stopBroadcast();
   }

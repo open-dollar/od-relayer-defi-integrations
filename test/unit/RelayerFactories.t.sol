@@ -4,11 +4,6 @@ pragma abicoder v2;
 
 import '@script/Registry.s.sol';
 import {DSTestPlus} from '@test/utils/DSTestPlus.t.sol';
-import {IERC20Metadata} from '@algebra-periphery/interfaces/IERC20Metadata.sol';
-import {IAlgebraFactory} from '@algebra-core/interfaces/IAlgebraFactory.sol';
-import {IAlgebraPool} from '@algebra-core/interfaces/IAlgebraPool.sol';
-import {CamelotRelayerFactory} from '@contracts/factories/CamelotRelayerFactory.sol';
-import {CamelotRelayerChild} from '@contracts/factories/CamelotRelayerChild.sol';
 import {ChainlinkRelayerFactory} from '@contracts/factories/ChainlinkRelayerFactory.sol';
 import {ChainlinkRelayerChild} from '@contracts/factories/ChainlinkRelayerChild.sol';
 import {PendleRelayerFactory} from '@contracts/factories/pendle/PendleRelayerFactory.sol';
@@ -27,13 +22,8 @@ abstract contract Base is DSTestPlus {
   address authorizedAccount = label('authorizedAccount');
   address user = label('user');
 
-  IAlgebraFactory mockAlgebraFactory = IAlgebraFactory(mockContract(SEPOLIA_ALGEBRA_FACTORY, 'UniswapV3Factory'));
-  IAlgebraPool mockAlgebraPool = IAlgebraPool(mockContract('UniswapV3Pool'));
   IERC20Metadata mockBaseToken = IERC20Metadata(mockContract('BaseToken'));
   IERC20Metadata mockQuoteToken = IERC20Metadata(mockContract('QuoteToken'));
-
-  CamelotRelayerFactory camelotRelayerFactory;
-  IBaseOracle camelotRelayerChild;
 
   ChainlinkRelayerFactory chainlinkRelayerFactory;
   IBaseOracle chainlinkRelayerChild;
@@ -48,12 +38,6 @@ abstract contract Base is DSTestPlus {
 
   function setUp() public virtual {
     vm.startPrank(deployer);
-
-    camelotRelayerFactory = new CamelotRelayerFactory();
-    label(address(camelotRelayerFactory), 'CamelotRelayerFactory');
-
-    camelotRelayerFactory.addAuthorization(authorizedAccount);
-
     chainlinkRelayerFactory = new ChainlinkRelayerFactory();
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
 
@@ -67,22 +51,6 @@ abstract contract Base is DSTestPlus {
     vm.stopPrank();
   }
 
-  function _mockGetPool(address _baseToken, address _quoteToken, address _algebraPool) internal {
-    vm.mockCall(
-      address(mockAlgebraFactory),
-      abi.encodeWithSignature('poolByPair(address,address)', _baseToken, _quoteToken),
-      abi.encode(_algebraPool)
-    );
-  }
-
-  function _mockToken0(address _token0) internal {
-    vm.mockCall(address(mockAlgebraPool), abi.encodeWithSignature('token0()'), abi.encode(_token0));
-  }
-
-  function _mockToken1(address _token1) internal {
-    vm.mockCall(address(mockAlgebraPool), abi.encodeWithSignature('token1()'), abi.encode(_token1));
-  }
-
   function _mockSymbol(string memory _symbol) internal {
     vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('symbol()'), abi.encode(_symbol));
     vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('symbol()'), abi.encode(_symbol));
@@ -93,111 +61,6 @@ abstract contract Base is DSTestPlus {
     vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
     vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
     vm.mockCall(address(mockAggregator), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
-  }
-}
-
-contract Unit_CamelotRelayerFactory_Constructor is Base {
-  event AddAuthorization(address _account);
-
-  modifier happyPath() {
-    vm.startPrank(user);
-    _;
-  }
-
-  function test_Emit_AddAuthorization() public happyPath {
-    vm.expectEmit();
-    emit AddAuthorization(user);
-
-    camelotRelayerFactory = new CamelotRelayerFactory();
-  }
-}
-
-contract Unit_RelayerFactory_DeployCamelotRelayer is Base {
-  event NewAlgebraRelayer(address indexed _relayer, address _baseToken, address _quoteToken, uint32 _quotePeriod);
-
-  address algebraRelayer = 0x7F85e9e000597158AED9320B5A5E11AB8cC7329A;
-
-  modifier happyPath(string memory _symbol, uint8 _decimals) {
-    vm.startPrank(authorizedAccount);
-    _assumeHappyPath(_decimals);
-    _mockValues(_symbol, _decimals);
-    _;
-  }
-
-  function _assumeHappyPath(uint8 _decimals) internal pure {
-    vm.assume(_decimals <= 18);
-  }
-
-  function _mockValues(string memory _symbol, uint8 _decimals) internal {
-    _mockGetPool(address(mockBaseToken), address(mockQuoteToken), address(mockAlgebraPool));
-    _mockToken0(address(mockBaseToken));
-    _mockToken1(address(mockQuoteToken));
-    _mockSymbol(_symbol);
-    _mockDecimals(_decimals);
-  }
-
-  function test_Revert_Unauthorized(uint32 _quotePeriod) public {
-    vm.expectRevert('Unauthorized');
-
-    camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-  }
-
-  function test_Deploy_RelayerChild(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    vm.expectEmit();
-    emit NewAlgebraRelayer(address(algebraRelayer), address(mockBaseToken), address(mockQuoteToken), _quotePeriod);
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-
-    string memory concatSymbol = string(abi.encodePacked(_symbol, ' / ', _symbol));
-    // params
-    assertEq(camelotRelayerChild.symbol(), concatSymbol);
-  }
-
-  function test_Set_Relayers(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-
-    assertEq(camelotRelayerFactory.relayerById(1), address(camelotRelayerChild));
-  }
-
-  function test_Emit_NewRelayer(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    vm.expectEmit();
-    emit NewAlgebraRelayer(address(algebraRelayer), address(mockBaseToken), address(mockQuoteToken), _quotePeriod);
-
-    camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-  }
-
-  function test_Return_Relayer(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    assertEq(
-      address(
-        camelotRelayerFactory.deployAlgebraRelayer(
-          SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-        )
-      ),
-      address(algebraRelayer)
-    );
   }
 }
 
@@ -334,11 +197,7 @@ contract Unit_DenominatedPriceOracleFactory_DeployDenominatedOracle is Base {
     chainlinkRelayerChild = chainlinkRelayerFactory.deployChainlinkRelayer(mockAggregator, 100);
     _mockToken0(address(mockBaseToken));
     _mockToken1(address(mockQuoteToken));
-    _mockGetPool(address(mockBaseToken), address(mockQuoteToken), address(mockAlgebraPool));
 
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), 1000
-    );
     vm.stopPrank();
   }
 
@@ -401,7 +260,7 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
     chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
     denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
-     pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
+    pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
     label(address(delayedOracleFactory), 'DelayedOracleFactory');
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
     label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
@@ -425,14 +284,12 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     string memory _ezEthSymbol = _ezEthUsdDelayedOracle.symbol(); // "(EZETH / ETH) * (ETH / USD)"
     vm.stopPrank();
     assertEq(_ezEthSymbol, '(ezETH / ETH) * (ETH / USD)');
-  
   }
 
   function test_Deploy_PendleFactory() public {
     assertEq(pendleFactory.relayerId(), 0);
     assertEq(pendleFactory.authorizedAccounts()[0], address(this));
   }
-
 
   function test_Deploy_PT_Oracle() public {
     IBaseOracle ptOracle =

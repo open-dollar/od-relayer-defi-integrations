@@ -5,8 +5,6 @@ import '@script/Registry.s.sol';
 import {Script} from 'forge-std/Script.sol';
 import {CommonMainnet} from '@script/Common.s.sol';
 import 'forge-std/console2.sol';
-
-import {CamelotRelayerFactory} from '@contracts/factories/CamelotRelayerFactory.sol';
 import {ChainlinkRelayerFactory} from '@contracts/factories/ChainlinkRelayerFactory.sol';
 import {DenominatedOracleFactory} from '@contracts/factories/DenominatedOracleFactory.sol';
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
