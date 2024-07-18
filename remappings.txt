@@ -1,5 +1,6 @@
 @openzeppelin/=lib/openzeppelin-contracts/
 @isolmate/=lib/isolmate/src/
+@gmx/=lib/gmx-synthetics/
 
 @script/=script/
 @contracts/=src/contracts/
