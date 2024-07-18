@@ -320,6 +320,7 @@ interface IGmxReader {
   }
 
   // =============== Functions ==============
+  function getMarket(IGmxDataStore dataStore, address key) external view returns (GmxMarket.MarketProps memory);
 
   function getMarketTokenPrice(
     IGmxDataStore _dataStore,

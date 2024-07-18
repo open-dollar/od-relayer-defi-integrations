@@ -12,6 +12,9 @@ contract GmxGmRelayerChild is GmxGmRelayer, FactoryChild {
   constructor(
     address _marketToken,
     address _gmxReader,
-    address _dataStore
-  ) GmxGmRelayer(_marketToken, _gmxReader, _dataStore) {}
+    address _dataStore,
+    address _indexTokenOracle,
+    address _longTokenOracle,
+    address _shortTokenOracle
+  ) GmxGmRelayer(_marketToken, _gmxReader, _dataStore, _indexTokenOracle, _longTokenOracle, _shortTokenOracle) {}
 }
