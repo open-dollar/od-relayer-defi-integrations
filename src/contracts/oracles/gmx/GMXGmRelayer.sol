@@ -9,7 +9,7 @@ pragma solidity 0.8.26;
 contract GMXGmRelayer {
   string public symbol;
 
-  constructor(address _market, address _oracle, uint32 _twapDuration) {}
+  constructor() {}
 
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result;

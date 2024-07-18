@@ -8,9 +8,6 @@ contract GMXGmRelayerChild is GMXGmRelayer, FactoryChild {
   // --- Init ---
 
   /**
-   * @param  _market The address pendle market
-   * @param  _oracle The address of the pendle oracle
-   * @param _twapDuration the amount in seconds of the desired twap observations (recommended 900s)
    */
   constructor() GMXGmRelayer() {}
 }

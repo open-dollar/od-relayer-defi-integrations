@@ -10,7 +10,7 @@ contract PendleRelayerFactory is Authorizable {
   uint256 public relayerId;
 
   // --- Events ---
-  event NewGMXGmRelayer(address indexed _market, address _oracle, uint32 _twapDuration);
+  event NewGMXGmRelayer();
 
   // --- Data ---
   mapping(uint256 => address) public relayerById;
@@ -20,10 +20,10 @@ contract PendleRelayerFactory is Authorizable {
 
   // --- Methods ---
 
-  function deployGMXGmRelayer(address market) external isAuthorized returns (IBaseOracle _pendlePtRelayerChild) {
+  function deployGMXGmRelayer(address market) external isAuthorized returns (IBaseOracle _gmxGmRelayerChild) {
     _gmxGmRelayerChild = IBaseOracle(address(0));
     relayerId++;
-    relayerById[relayerId] = address(_pendlePtRelayerChild);
-    emit NewPendlePtRelayer(address(_market), _oracle, _twapDuration);
+    relayerById[relayerId] = address(_gmxGmRelayerChild);
+    emit NewGMXGmRelayer();
   }
 }
