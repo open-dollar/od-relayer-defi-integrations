@@ -68,14 +68,14 @@ contract GmxGmRelayer {
   function _getCurrentPrice() internal view returns (uint256) {
     GmxMarket.MarketProps memory marketProps = reader.getMarket(dataStore, marketToken);
 
-    uint256 longTokenPrice = longTokenOracle.read();
+    (uint256 longTokenPrice,) = longTokenOracle.getResultWithValidity();
 
     GmxPrice.PriceProps memory longTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
     });
 
-    uint256 shortTokenPrice = shortTokenOracle.read();
+    (uint256 shortTokenPrice,) = shortTokenOracle.getResultWithValidity();
     GmxPrice.PriceProps memory shortTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
@@ -91,7 +91,7 @@ contract GmxGmRelayer {
     GmxPrice.PriceProps memory _longTokenPriceProps,
     GmxPrice.PriceProps memory _shortTokenPriceProps
   ) internal view returns (uint256) {
-    uint256 indexTokenPrice = indexTokenOracle.read();
+    (uint256 indexTokenPrice,) = indexTokenOracle.getResultWithValidity();
 
     // Dolomite returns price as 36 decimals - token decimals
     // GMX expects 30 decimals - token decimals so we divide by 10 ** 6

@@ -275,6 +275,9 @@ contract Unit_GMX_Relayer_Factory is Base {
   IGmxRelayerFactory public gmxFactory;
   IGmxReader public gmxReader;
   IGmxDataStore public gmxDataStore;
+  IBaseOracle public wethUsdFeed;
+  IBaseOracle public usdcUsdFeed;
+  address mainnetAuthorizedAccount = 0xF78dA2A37049627636546E0cFAaB2aD664950917;
 
   function setUp() public virtual override {
     super.setUp();
@@ -282,14 +285,26 @@ contract Unit_GMX_Relayer_Factory is Base {
     delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
     chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
     denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
+
     gmxFactory = IGmxRelayerFactory(address(new GmxRelayerFactory()));
     gmxReader = IGmxReader(MAINNET_GMX_READER);
     gmxDataStore = IGmxDataStore(MAINNET_GMX_DATA_STORE);
+
+    vm.startPrank(mainnetAuthorizedAccount);
+    usdcUsdFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
+      MAINNET_CHAINLINK_USDC_USD_FEED, MAINNET_CHAINLINK_SEQUENCER_FEED, 3600, 3600
+    );
+    wethUsdFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
+      MAINNET_CHAINLINK_ETH_USD_FEED, MAINNET_CHAINLINK_SEQUENCER_FEED, 3600, 3600
+    );
+    vm.stopPrank();
 
     label(address(delayedOracleFactory), 'DelayedOracleFactory');
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
     label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
     label(address(gmxFactory), 'gmxFactory');
+    label(address(usdcUsdFeed), 'usdcUsdFeed');
+    label(address(wethUsdFeed), 'wethUsdFeed');
   }
 
   function test_GmxFactory_Deployment() public view {
@@ -298,13 +313,16 @@ contract Unit_GMX_Relayer_Factory is Base {
   }
 
   function test_Create_GmxGm_Relayer() public {
-    GmxMarket.MarketProps[] memory newProps = gmxReader.getMarkets(gmxDataStore, 0, 100);
-    for (uint256 i; i < newProps.length; i++) {
-      console2.log('maket %s', i);
-      console2.log('marketToken', newProps[i].marketToken);
-      console2.log('indexToken', newProps[i].indexToken);
-      console2.log('longtoken', newProps[i].longToken);
-      console2.log('shortToken', newProps[i].shortToken);
-    }
+    IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayer(
+      MAINNET_GMX_WETH_PERP_MARKET_TOKEN,
+      address(gmxReader),
+      address(gmxDataStore),
+      address(wethUsdFeed),
+      address(wethUsdFeed),
+      address(usdcUsdFeed)
+    );
+    (uint256 readValue, bool valid) = wethGmMarket.getResultWithValidity();
+    assertGt(readValue, 0);
+    assertTrue(valid);
   }
 }
