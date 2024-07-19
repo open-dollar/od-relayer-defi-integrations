@@ -62,7 +62,7 @@ contract GmxGmRelayer {
   }
 
   function read() external view returns (uint256 _value) {
-    _value;
+    _value = _getCurrentPrice();
   }
 
   function _getCurrentPrice() internal view returns (uint256) {
@@ -83,7 +83,7 @@ contract GmxGmRelayer {
 
     uint256 gmPrice = _getGmTokenPrice(marketProps, longTokenPriceProps, shortTokenPriceProps);
 
-    return gmPrice; //_adjustDownForBasisPoints(gmPrice, getFeeBpByMarketToken(factory.UNDERLYING_TOKEN()));
+    return _adjustDownForBasisPoints(gmPrice, getFeeBpByMarketToken(marketToken));
   }
 
   function _getGmTokenPrice(
@@ -127,5 +127,10 @@ contract GmxGmRelayer {
 
   function _swapFeeFactorKey(address _marketToken, bool _forPositiveImpact) private pure returns (bytes32) {
     return keccak256(abi.encode(SWAP_FEE_FACTOR_KEY, _marketToken, _forPositiveImpact));
+  }
+
+  function getFeeBpByMarketToken(address _gmToken) public view returns (uint256) {
+    bytes32 key = _swapFeeFactorKey(_gmToken, /* _forPositiveImpact = */ false);
+    return dataStore.getUint(key) / FEE_FACTOR_DECIMAL_ADJUSTMENT;
   }
 }

@@ -6,7 +6,7 @@ import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {GmxGmRelayerChild} from './GmxGmRelayerChild.sol';
 import 'forge-std/console2.sol';
 
-contract PendleRelayerFactory is Authorizable {
+contract GmxRelayerFactory is Authorizable {
   uint256 public relayerId;
 
   // --- Events ---

@@ -17,6 +17,12 @@ import {MAINNET_PENDLE_ORACLE, MAINNET_PENDLE_RETH_MARKET} from '@script/Registr
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IPendleRelayerFactory} from '@interfaces/factories/IPendleRelayerFactory.sol';
 import {IPendleRelayer} from '@interfaces/oracles/pendle/IPendleRelayer.sol';
+import {IGmxRelayerFactory} from '@interfaces/factories/IGmxRelayerFactory.sol';
+import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
+import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
+import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';
+import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
+import 'forge-std/console2.sol';
 
 abstract contract Base is DSTestPlus {
   address deployer = label('deployer');
@@ -262,5 +268,43 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     pendleFactory.deployPendleYtRelayer(address(0), MAINNET_PENDLE_ORACLE, uint32(900));
     vm.expectRevert('Invalid address');
     pendleFactory.deployPendleLpRelayer(address(0), MAINNET_PENDLE_ORACLE, uint32(900));
+  }
+}
+
+contract Unit_GMX_Relayer_Factory is Base {
+  IGmxRelayerFactory public gmxFactory;
+  IGmxReader public gmxReader;
+  IGmxDataStore public gmxDataStore;
+
+  function setUp() public virtual override {
+    super.setUp();
+    vm.createSelectFork(vm.envString('ARB_MAINNET_RPC'));
+    delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
+    chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
+    denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
+    gmxFactory = IGmxRelayerFactory(address(new GmxRelayerFactory()));
+    gmxReader = IGmxReader(MAINNET_GMX_READER);
+    gmxDataStore = IGmxDataStore(MAINNET_GMX_DATA_STORE);
+
+    label(address(delayedOracleFactory), 'DelayedOracleFactory');
+    label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
+    label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
+    label(address(gmxFactory), 'gmxFactory');
+  }
+
+  function test_GmxFactory_Deployment() public view {
+    assertEq(gmxFactory.relayerId(), 0);
+    assertEq(gmxFactory.authorizedAccounts()[0], address(this));
+  }
+
+  function test_Create_GmxGm_Relayer() public {
+    GmxMarket.MarketProps[] memory newProps = gmxReader.getMarkets(gmxDataStore, 0, 100);
+    for (uint256 i; i < newProps.length; i++) {
+      console2.log('maket %s', i);
+      console2.log('marketToken', newProps[i].marketToken);
+      console2.log('indexToken', newProps[i].indexToken);
+      console2.log('longtoken', newProps[i].longToken);
+      console2.log('shortToken', newProps[i].shortToken);
+    }
   }
 }
