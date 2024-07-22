@@ -68,14 +68,14 @@ contract GmxGmRelayer {
   function _getCurrentPrice() internal view returns (uint256) {
     GmxMarket.MarketProps memory marketProps = reader.getMarket(dataStore, marketToken);
 
-    (uint256 longTokenPrice,) = longTokenOracle.getResultWithValidity();
+    uint256 longTokenPrice = longTokenOracle.read();
 
     GmxPrice.PriceProps memory longTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
     });
 
-    (uint256 shortTokenPrice,) = shortTokenOracle.getResultWithValidity();
+    uint256 shortTokenPrice = shortTokenOracle.read();
     GmxPrice.PriceProps memory shortTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
