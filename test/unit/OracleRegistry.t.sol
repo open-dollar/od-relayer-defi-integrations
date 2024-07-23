@@ -175,15 +175,13 @@ contract Unit_GmxGmRelayerWithRegistry is Base {
     label(address(gmxFactory), 'gmxFactory');
   }
 
-  function test_Create_GmxGm_Relayer() public {
+  function test_Create_GmxGmRelayerWithRegistry() public {
     // vm.warp(block.timestamp + 3700);
     IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayerWithRegistry(
-      MAINNET_GMX_WETH_PERP_MARKET_TOKEN, address(gmxReader), address(gmxDataStore), address(oracleRelayer)
+      MAINNET_GMX_WETH_PERP_MARKET_TOKEN, address(gmxReader), address(gmxDataStore), address(oracleRegistry)
     );
     (uint256 readValue, bool valid) = wethGmMarket.getResultWithValidity();
     assertGt(readValue, 0);
     assertTrue(valid);
   }
-
-  function test_DeployGmGmxRelayerWithRegistry() public {}
 }
