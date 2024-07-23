@@ -158,6 +158,29 @@ contract Unit_OracleRegistry_AddOracle is Base {
   }
 }
 
+contract Unit_OracleRegistry_GetResultWithValidity is Base {
+  function test_GetResultWithValidity() public {
+    (uint256 _result, bool _validity) = oracleRegistry.getResultWithValidity(ETH);
+    assertGt(_result, 0);
+    assertTrue(_validity);
+  }
+
+  function test_Read() public {
+    uint256 _result = oracleRegistry.read(ETH);
+    assertGt(_result, 0);
+  }
+
+  function test_Read_Revert_NotSupported() public {
+    vm.expectRevert('ORACLE REGISTRY: TOKEN NOT SUPPORTED');
+    oracleRegistry.read(address(1));
+  }
+
+  function test_GetResultWithValidity_Revert_NotSupported() public {
+    vm.expectRevert('ORACLE REGISTRY: TOKEN NOT SUPPORTED');
+    oracleRegistry.getResultWithValidity(address(1));
+  }
+}
+
 contract Unit_GmxGmRelayerWithRegistry is Base {
   IGmxRelayerFactory public gmxFactory;
   IGmxReader public gmxReader;
@@ -176,7 +199,6 @@ contract Unit_GmxGmRelayerWithRegistry is Base {
   }
 
   function test_Create_GmxGmRelayerWithRegistry() public {
-    // vm.warp(block.timestamp + 3700);
     IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayerWithRegistry(
       MAINNET_GMX_WETH_PERP_MARKET_TOKEN, address(gmxReader), address(gmxDataStore), address(oracleRegistry)
     );
