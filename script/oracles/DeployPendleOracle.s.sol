@@ -21,7 +21,7 @@ contract DeployRethPtToSyPendleRelayerMainnet is CommonMainnet {
     );
 
     IBaseOracle _rethToUSDOracle = denominatedOracleFactory.deployDenominatedOracle(
-      _pendleRethPtToSyFeed, IBaseOracle(MAINNET_DENOMINATED_RETH_USD_ORACLE), false
+      _pendleRethPtToSyFeed, IBaseOracle(MAINNET_DENOMINATED_L2VALIDITY_RETH_USD_ORACLE), false
     );
 
     IBaseOracle _rethToUSDOracleDelayedOracle =
