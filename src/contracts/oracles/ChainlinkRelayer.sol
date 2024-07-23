@@ -47,7 +47,6 @@ contract ChainlinkRelayer {
   function read() public view virtual returns (uint256 _result) {
     // Fetch values from Chainlink
     (, int256 _aggregatorResult,, uint256 _aggregatorTimestamp,) = chainlinkFeed.latestRoundData();
-
     // Revert if price is invalid
     require(_aggregatorResult != 0 && _isValidFeed(_aggregatorTimestamp), 'InvalidPriceFeed');
 

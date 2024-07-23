@@ -4,6 +4,7 @@ pragma solidity 0.8.26;
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {GmxGmRelayerChild} from './GmxGmRelayerChild.sol';
+import {GmxGmRelayerWithRegistryChild} from './GmxGmRelayerWithRegistryChild.sol';
 import 'forge-std/console2.sol';
 
 contract GmxRelayerFactory is Authorizable {
@@ -35,6 +36,19 @@ contract GmxRelayerFactory is Authorizable {
         )
       )
     );
+    relayerId++;
+    relayerById[relayerId] = address(_gmxGmRelayerChild);
+    emit NewGmxGmRelayer(address(_gmxGmRelayerChild), _marketToken);
+  }
+
+  function deployGmxGmRelayerWithRegistry(
+    address _marketToken,
+    address _gmxReader,
+    address _dataStore,
+    address _oracleRegistry
+  ) external isAuthorized returns (IBaseOracle _gmxGmRelayerChild) {
+    _gmxGmRelayerChild =
+      IBaseOracle(address(new GmxGmRelayerWithRegistryChild(_marketToken, _gmxReader, _dataStore, _oracleRegistry)));
     relayerId++;
     relayerById[relayerId] = address(_gmxGmRelayerChild);
     emit NewGmxGmRelayer(address(_gmxGmRelayerChild), _marketToken);

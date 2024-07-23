@@ -3,7 +3,6 @@ pragma solidity ^0.8.9;
 
 /**
  * @title   GmxMarketPoolValueInfo
- * @author  Dolomite
  *
  * @notice  GMX MarketPoolVaultInfo Library
  */

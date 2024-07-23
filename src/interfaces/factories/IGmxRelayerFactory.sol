@@ -20,4 +20,11 @@ interface IGmxRelayerFactory is IAuthorizable {
     address _longTokenOracle,
     address _shortTokenOracle
   ) external returns (IBaseOracle _gmxGmRelayerChild);
+
+  function deployGmxGmRelayerWithRegistry(
+    address _marketToken,
+    address _gmxReader,
+    address _dataStore,
+    address _oracleRegistry
+  ) external returns (IBaseOracle _gmxGmRelayerChild);
 }

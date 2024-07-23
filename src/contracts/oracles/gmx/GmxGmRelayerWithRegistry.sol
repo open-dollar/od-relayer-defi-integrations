@@ -1,21 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.26;
 
-import {OracleUtils} from '@gmx/contracts/oracle/OracleUtils.sol';
-import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
-import {IOracleProvider} from '@gmx/contracts/oracle/IOracleProvider.sol';
 import {GmxPrice} from '@libraries/gmx/GmxPrice.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
-import 'forge-std/console2.sol';
+import {IOracleRegistry} from '@interfaces/oracles/IOracleRegistry.sol';
+
 /**
  * @title  GmxGmRelayer
  * @notice This contracts transforms a Gmx GM oracle into a standard IBaseOracle feed
  *
  */
-
-contract GmxGmRelayer {
+contract GmxGmRelayerWithRegistry {
   string public symbol;
 
   // ============================ Constants ============================
@@ -37,45 +34,41 @@ contract GmxGmRelayer {
   address public marketToken;
   IGmxDataStore public dataStore;
   IGmxReader public reader;
-  IBaseOracle public indexTokenOracle;
-  IBaseOracle public longTokenOracle;
-  IBaseOracle public shortTokenOracle;
+  IOracleRegistry public registry;
+  GmxMarket.MarketProps public marketProps;
 
-  constructor(
-    address _marketToken,
-    address _gmxReader,
-    address _dataStore,
-    address _indexTokenOracle,
-    address _longTokenOracle,
-    address _shortTokenOracle
-  ) {
+  constructor(address _marketToken, address _gmxReader, address _gmxDataStore, address _oracleRegistry) {
     marketToken = _marketToken;
-    dataStore = IGmxDataStore(_dataStore);
+    dataStore = IGmxDataStore(_gmxDataStore);
     reader = IGmxReader(_gmxReader);
-    indexTokenOracle = IBaseOracle(_indexTokenOracle);
-    longTokenOracle = IBaseOracle(_longTokenOracle);
-    shortTokenOracle = IBaseOracle(_shortTokenOracle);
+    registry = IOracleRegistry(_oracleRegistry);
+    marketProps = reader.getMarket(dataStore, marketToken);
+
+    if (marketProps.indexToken != address(0)) {
+      require(registry.isSupported(marketProps.indexToken), 'Oracle registry: Unsupported token');
+    }
+    require(registry.isSupported(marketProps.longToken), 'Oracle registry: Unsupported token');
+    require(registry.isSupported(marketProps.shortToken), 'Oracle registry: Unsupported token');
   }
 
-  function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
+  function getResultWithValidity() external returns (uint256 _result, bool _validity) {
     _result = _getCurrentPrice();
     _validity = true;
   }
 
-  function read() external view returns (uint256 _value) {
+  function read() external returns (uint256 _value) {
     _value = _getCurrentPrice();
   }
 
-  function _getCurrentPrice() internal view returns (uint256) {
-    GmxMarket.MarketProps memory marketProps = reader.getMarket(dataStore, marketToken);
-
-    uint256 longTokenPrice = longTokenOracle.read();
+  function _getCurrentPrice() internal returns (uint256) {
+    (uint256 longTokenPrice,) = registry.getResultWithValidity(marketProps.longToken);
 
     GmxPrice.PriceProps memory longTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
     });
-    (uint256 shortTokenPrice,) = shortTokenOracle.getResultWithValidity();
+
+    (uint256 shortTokenPrice,) = registry.getResultWithValidity(marketProps.shortToken);
     GmxPrice.PriceProps memory shortTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
@@ -90,8 +83,8 @@ contract GmxGmRelayer {
     GmxMarket.MarketProps memory _marketProps,
     GmxPrice.PriceProps memory _longTokenPriceProps,
     GmxPrice.PriceProps memory _shortTokenPriceProps
-  ) internal view returns (uint256) {
-    (uint256 indexTokenPrice,) = indexTokenOracle.getResultWithValidity();
+  ) internal returns (uint256) {
+    (uint256 indexTokenPrice,) = registry.getResultWithValidity(marketProps.indexToken);
 
     // Dolomite returns price as 36 decimals - token decimals
     // GMX expects 30 decimals - token decimals so we divide by 10 ** 6
