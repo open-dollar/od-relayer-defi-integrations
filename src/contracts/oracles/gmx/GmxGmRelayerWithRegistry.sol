@@ -5,7 +5,7 @@ import {GmxPrice} from '@libraries/gmx/GmxPrice.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
-import {IChainlinkOracleRegistry} from '@interfaces/oracles/IChainlinkOracleRegistry.sol';
+import {IOracleRegistry} from '@interfaces/oracles/IOracleRegistry.sol';
 
 /**
  * @title  GmxGmRelayer
@@ -34,15 +34,21 @@ contract GmxGmRelayerWithRegistry {
   address public marketToken;
   IGmxDataStore public dataStore;
   IGmxReader public reader;
-  IChainlinkOracleRegistry public registry;
+  IOracleRegistry public registry;
   GmxMarket.MarketProps public marketProps;
 
-  constructor(address _marketToken, address _gmxReader, address _gmxDataStore, address _chainlinkOracleRegistry) {
+  constructor(address _marketToken, address _gmxReader, address _gmxDataStore, address _oracleRegistry) {
     marketToken = _marketToken;
     dataStore = IGmxDataStore(_gmxDataStore);
     reader = IGmxReader(_gmxReader);
-    registry = IChainlinkOracleRegistry(_chainlinkOracleRegistry);
+    registry = IOracleRegistry(_oracleRegistry);
     marketProps = reader.getMarket(dataStore, marketToken);
+
+    if (marketProps.indexToken != address(0)) {
+      require(registry.isSupported(marketProps.indexToken), 'Oracle registry: Unsupported token');
+    }
+    require(registry.isSupported(marketProps.longToken), 'Oracle registry: Unsupported token');
+    require(registry.isSupported(marketProps.shortToken), 'Oracle registry: Unsupported token');
   }
 
   function getResultWithValidity() external returns (uint256 _result, bool _validity) {

@@ -8,12 +8,13 @@ import {GmxPrice} from '@libraries/gmx/GmxPrice.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
-
+import 'forge-std/console2.sol';
 /**
  * @title  GmxGmRelayer
  * @notice This contracts transforms a Gmx GM oracle into a standard IBaseOracle feed
  *
  */
+
 contract GmxGmRelayer {
   string public symbol;
 
@@ -74,8 +75,7 @@ contract GmxGmRelayer {
       min: _adjustDownForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(longTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
     });
-
-    uint256 shortTokenPrice = shortTokenOracle.read();
+    (uint256 shortTokenPrice,) = shortTokenOracle.getResultWithValidity();
     GmxPrice.PriceProps memory shortTokenPriceProps = GmxPrice.PriceProps({
       min: _adjustDownForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT,
       max: _adjustUpForBasisPoints(shortTokenPrice, PRICE_DEVIATION_BP) / GMX_DECIMAL_ADJUSTMENT
