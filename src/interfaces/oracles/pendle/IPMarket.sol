@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.20;
 
 import {IStandardizedYield} from '@interfaces/oracles/pendle/IStandardizedYield.sol';
 import {IPPrincipalToken} from '@interfaces/oracles/pendle/IPPrincipalToken.sol';

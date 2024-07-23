@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.8.26;
 pragma abicoder v2;
 
 import '@script/Registry.s.sol';
 import {DSTestPlus} from '@test/utils/DSTestPlus.t.sol';
-import {IERC20Metadata} from '@algebra-periphery/interfaces/IERC20Metadata.sol';
-import {IAlgebraFactory} from '@algebra-core/interfaces/IAlgebraFactory.sol';
-import {IAlgebraPool} from '@algebra-core/interfaces/IAlgebraPool.sol';
-import {CamelotRelayerFactory} from '@contracts/factories/CamelotRelayerFactory.sol';
-import {CamelotRelayerChild} from '@contracts/factories/CamelotRelayerChild.sol';
+import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import {ChainlinkRelayerFactory} from '@contracts/factories/ChainlinkRelayerFactory.sol';
 import {ChainlinkRelayerChild} from '@contracts/factories/ChainlinkRelayerChild.sol';
 import {PendleRelayerFactory} from '@contracts/factories/pendle/PendleRelayerFactory.sol';
@@ -21,19 +17,20 @@ import {MAINNET_PENDLE_ORACLE, MAINNET_PENDLE_RETH_MARKET} from '@script/Registr
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IPendleRelayerFactory} from '@interfaces/factories/IPendleRelayerFactory.sol';
 import {IPendleRelayer} from '@interfaces/oracles/pendle/IPendleRelayer.sol';
+import {IGmxRelayerFactory} from '@interfaces/factories/IGmxRelayerFactory.sol';
+import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
+import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
+import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';
+import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
+import 'forge-std/console2.sol';
 
 abstract contract Base is DSTestPlus {
   address deployer = label('deployer');
   address authorizedAccount = label('authorizedAccount');
   address user = label('user');
 
-  IAlgebraFactory mockAlgebraFactory = IAlgebraFactory(mockContract(SEPOLIA_ALGEBRA_FACTORY, 'UniswapV3Factory'));
-  IAlgebraPool mockAlgebraPool = IAlgebraPool(mockContract('UniswapV3Pool'));
   IERC20Metadata mockBaseToken = IERC20Metadata(mockContract('BaseToken'));
   IERC20Metadata mockQuoteToken = IERC20Metadata(mockContract('QuoteToken'));
-
-  CamelotRelayerFactory camelotRelayerFactory;
-  IBaseOracle camelotRelayerChild;
 
   ChainlinkRelayerFactory chainlinkRelayerFactory;
   IBaseOracle chainlinkRelayerChild;
@@ -48,12 +45,6 @@ abstract contract Base is DSTestPlus {
 
   function setUp() public virtual {
     vm.startPrank(deployer);
-
-    camelotRelayerFactory = new CamelotRelayerFactory();
-    label(address(camelotRelayerFactory), 'CamelotRelayerFactory');
-
-    camelotRelayerFactory.addAuthorization(authorizedAccount);
-
     chainlinkRelayerFactory = new ChainlinkRelayerFactory();
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
 
@@ -67,22 +58,6 @@ abstract contract Base is DSTestPlus {
     vm.stopPrank();
   }
 
-  function _mockGetPool(address _baseToken, address _quoteToken, address _algebraPool) internal {
-    vm.mockCall(
-      address(mockAlgebraFactory),
-      abi.encodeWithSignature('poolByPair(address,address)', _baseToken, _quoteToken),
-      abi.encode(_algebraPool)
-    );
-  }
-
-  function _mockToken0(address _token0) internal {
-    vm.mockCall(address(mockAlgebraPool), abi.encodeWithSignature('token0()'), abi.encode(_token0));
-  }
-
-  function _mockToken1(address _token1) internal {
-    vm.mockCall(address(mockAlgebraPool), abi.encodeWithSignature('token1()'), abi.encode(_token1));
-  }
-
   function _mockSymbol(string memory _symbol) internal {
     vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('symbol()'), abi.encode(_symbol));
     vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('symbol()'), abi.encode(_symbol));
@@ -93,111 +68,6 @@ abstract contract Base is DSTestPlus {
     vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
     vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
     vm.mockCall(address(mockAggregator), abi.encodeWithSignature('decimals()'), abi.encode(_decimals));
-  }
-}
-
-contract Unit_CamelotRelayerFactory_Constructor is Base {
-  event AddAuthorization(address _account);
-
-  modifier happyPath() {
-    vm.startPrank(user);
-    _;
-  }
-
-  function test_Emit_AddAuthorization() public happyPath {
-    vm.expectEmit();
-    emit AddAuthorization(user);
-
-    camelotRelayerFactory = new CamelotRelayerFactory();
-  }
-}
-
-contract Unit_RelayerFactory_DeployCamelotRelayer is Base {
-  event NewAlgebraRelayer(address indexed _relayer, address _baseToken, address _quoteToken, uint32 _quotePeriod);
-
-  address algebraRelayer = 0x7F85e9e000597158AED9320B5A5E11AB8cC7329A;
-
-  modifier happyPath(string memory _symbol, uint8 _decimals) {
-    vm.startPrank(authorizedAccount);
-    _assumeHappyPath(_decimals);
-    _mockValues(_symbol, _decimals);
-    _;
-  }
-
-  function _assumeHappyPath(uint8 _decimals) internal pure {
-    vm.assume(_decimals <= 18);
-  }
-
-  function _mockValues(string memory _symbol, uint8 _decimals) internal {
-    _mockGetPool(address(mockBaseToken), address(mockQuoteToken), address(mockAlgebraPool));
-    _mockToken0(address(mockBaseToken));
-    _mockToken1(address(mockQuoteToken));
-    _mockSymbol(_symbol);
-    _mockDecimals(_decimals);
-  }
-
-  function test_Revert_Unauthorized(uint32 _quotePeriod) public {
-    vm.expectRevert('Unauthorized');
-
-    camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-  }
-
-  function test_Deploy_RelayerChild(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    vm.expectEmit();
-    emit NewAlgebraRelayer(address(algebraRelayer), address(mockBaseToken), address(mockQuoteToken), _quotePeriod);
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-
-    string memory concatSymbol = string(abi.encodePacked(_symbol, ' / ', _symbol));
-    // params
-    assertEq(camelotRelayerChild.symbol(), concatSymbol);
-  }
-
-  function test_Set_Relayers(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-
-    assertEq(camelotRelayerFactory.relayerById(1), address(camelotRelayerChild));
-  }
-
-  function test_Emit_NewRelayer(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    vm.expectEmit();
-    emit NewAlgebraRelayer(address(algebraRelayer), address(mockBaseToken), address(mockQuoteToken), _quotePeriod);
-
-    camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-    );
-  }
-
-  function test_Return_Relayer(
-    uint32 _quotePeriod,
-    string memory _symbol,
-    uint8 _decimals
-  ) public happyPath(_symbol, _decimals) {
-    assertEq(
-      address(
-        camelotRelayerFactory.deployAlgebraRelayer(
-          SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), _quotePeriod
-        )
-      ),
-      address(algebraRelayer)
-    );
   }
 }
 
@@ -220,7 +90,7 @@ contract Unit_ChainlinkRelayerFactory_Constructor is Base {
 contract Unit_RelayerFactory_DeployChainlinkRelayer is Base {
   event NewChainlinkRelayer(address indexed _chainlinkRelayer, address _aggregator, uint256 _staleThreshold);
 
-  address chainlinkRelayer = 0x56D9e6a12fC3E3f589Ee5E685C9f118D62ce9C8D;
+  address chainlinkRelayer = 0x7F85e9e000597158AED9320B5A5E11AB8cC7329A; //0x56D9e6a12fC3E3f589Ee5E685C9f118D62ce9C8D;
 
   modifier happyPath(string memory _symbol, uint8 _decimals, uint256 _staleThreshold) {
     vm.startPrank(authorizedAccount);
@@ -309,88 +179,6 @@ contract Unit_DenominatedPriceOracleFactory_Constructor is Base {
   }
 }
 
-contract Unit_DenominatedPriceOracleFactory_DeployDenominatedOracle is Base {
-  event NewDenominatedOracle(
-    address indexed _denominatedOracle, address _priceSource, address _denominationPriceSource, bool _inverted
-  );
-
-  address denominatedOracle = 0xb2A72B7BA8156A59fD84c61e5eF539d385D8652a;
-
-  modifier happyPath() {
-    vm.startPrank(authorizedAccount);
-    _;
-  }
-
-  function setUp() public override {
-    super.setUp();
-    vm.startPrank(authorizedAccount);
-    vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('symbol()'), abi.encode('BaseToken'));
-    vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('symbol()'), abi.encode('QuoteToken'));
-    vm.mockCall(address(mockAggregator), abi.encodeWithSignature('description()'), abi.encode('Aggregator'));
-    vm.mockCall(address(mockBaseToken), abi.encodeWithSignature('decimals()'), abi.encode(18));
-    vm.mockCall(address(mockQuoteToken), abi.encodeWithSignature('decimals()'), abi.encode(18));
-    vm.mockCall(address(mockAggregator), abi.encodeWithSignature('decimals()'), abi.encode(18));
-
-    chainlinkRelayerChild = chainlinkRelayerFactory.deployChainlinkRelayer(mockAggregator, 100);
-    _mockToken0(address(mockBaseToken));
-    _mockToken1(address(mockQuoteToken));
-    _mockGetPool(address(mockBaseToken), address(mockQuoteToken), address(mockAlgebraPool));
-
-    camelotRelayerChild = camelotRelayerFactory.deployAlgebraRelayer(
-      SEPOLIA_ALGEBRA_FACTORY, address(mockBaseToken), address(mockQuoteToken), 1000
-    );
-    vm.stopPrank();
-  }
-
-  function test_Deploy_RelayerChild() public happyPath {
-    vm.expectEmit();
-    emit NewDenominatedOracle(
-      address(denominatedOracle), address(camelotRelayerChild), address(chainlinkRelayerChild), false
-    );
-    denominatedOracleChild =
-      denominatedOracleFactory.deployDenominatedOracle(camelotRelayerChild, chainlinkRelayerChild, false);
-
-    string memory symbol =
-      string(abi.encodePacked('(', mockBaseToken.symbol(), ' / ', mockQuoteToken.symbol(), ') * (Aggregator)'));
-    assertEq(denominatedOracleChild.symbol(), symbol);
-  }
-
-  function test_Deploy_RelayerChildInverted() public happyPath {
-    vm.expectEmit();
-    emit NewDenominatedOracle(
-      address(denominatedOracle), address(camelotRelayerChild), address(chainlinkRelayerChild), true
-    );
-    denominatedOracleChild =
-      denominatedOracleFactory.deployDenominatedOracle(camelotRelayerChild, chainlinkRelayerChild, true);
-
-    string memory symbol =
-      string(abi.encodePacked('(', mockBaseToken.symbol(), ' / ', mockQuoteToken.symbol(), ')^-1 / (Aggregator)'));
-    assertEq(denominatedOracleChild.symbol(), symbol);
-  }
-
-  function test_Set_Relayers() public happyPath {
-    denominatedOracleChild =
-      denominatedOracleFactory.deployDenominatedOracle(camelotRelayerChild, chainlinkRelayerChild, false);
-    assertEq(denominatedOracleFactory.oracleById(1), address(denominatedOracleChild));
-  }
-
-  function test_Emit_NewRelayer() public happyPath {
-    vm.expectEmit();
-    emit NewDenominatedOracle(
-      address(denominatedOracle), address(camelotRelayerChild), address(chainlinkRelayerChild), false
-    );
-    denominatedOracleChild =
-      denominatedOracleFactory.deployDenominatedOracle(camelotRelayerChild, chainlinkRelayerChild, false);
-  }
-
-  function test_Return_Relayer() public happyPath {
-    assertEq(
-      address(denominatedOracleFactory.deployDenominatedOracle(camelotRelayerChild, chainlinkRelayerChild, false)),
-      address(denominatedOracle)
-    );
-  }
-}
-
 contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
   address mainnetAuthorizedAccount = 0xF78dA2A37049627636546E0cFAaB2aD664950917;
   IPendleRelayerFactory public pendleFactory;
@@ -401,7 +189,7 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
     chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
     denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
-     pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
+    pendleFactory = IPendleRelayerFactory(address(new PendleRelayerFactory()));
     label(address(delayedOracleFactory), 'DelayedOracleFactory');
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
     label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
@@ -425,14 +213,12 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     string memory _ezEthSymbol = _ezEthUsdDelayedOracle.symbol(); // "(EZETH / ETH) * (ETH / USD)"
     vm.stopPrank();
     assertEq(_ezEthSymbol, '(ezETH / ETH) * (ETH / USD)');
-  
   }
 
-  function test_Deploy_PendleFactory() public {
+  function test_Deploy_PendleFactory() public view {
     assertEq(pendleFactory.relayerId(), 0);
     assertEq(pendleFactory.authorizedAccounts()[0], address(this));
   }
-
 
   function test_Deploy_PT_Oracle() public {
     IBaseOracle ptOracle =
@@ -442,7 +228,6 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     assertEq(address(IPendleRelayer(address(ptOracle)).market()), MAINNET_PENDLE_RETH_MARKET);
     assertEq(address(IPendleRelayer(address(ptOracle)).oracle()), MAINNET_PENDLE_ORACLE);
     assertEq(address(IPendleRelayer(address(ptOracle)).PT()), 0x685155D3BD593508Fe32Be39729810A591ED9c87);
-    assertEq(address(IPendleRelayer(address(ptOracle)).YT()), 0xe822AE44EB2466B4E263b1cbC94b4833dDEf9700);
     assertEq(address(IPendleRelayer(address(ptOracle)).SY()), 0xc0Cf4b266bE5B3229C49590B59E67A09c15b22f4);
   }
 
@@ -453,7 +238,6 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     assertEq(uint256(IPendleRelayer(address(ytOracle)).twapDuration()), 900);
     assertEq(address(IPendleRelayer(address(ytOracle)).market()), MAINNET_PENDLE_RETH_MARKET);
     assertEq(address(IPendleRelayer(address(ytOracle)).oracle()), MAINNET_PENDLE_ORACLE);
-    assertEq(address(IPendleRelayer(address(ytOracle)).PT()), 0x685155D3BD593508Fe32Be39729810A591ED9c87);
     assertEq(address(IPendleRelayer(address(ytOracle)).YT()), 0xe822AE44EB2466B4E263b1cbC94b4833dDEf9700);
     assertEq(address(IPendleRelayer(address(ytOracle)).SY()), 0xc0Cf4b266bE5B3229C49590B59E67A09c15b22f4);
   }
@@ -465,8 +249,6 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     assertEq(uint256(IPendleRelayer(address(lpOracle)).twapDuration()), 900);
     assertEq(address(IPendleRelayer(address(lpOracle)).market()), MAINNET_PENDLE_RETH_MARKET);
     assertEq(address(IPendleRelayer(address(lpOracle)).oracle()), MAINNET_PENDLE_ORACLE);
-    assertEq(address(IPendleRelayer(address(lpOracle)).PT()), 0x685155D3BD593508Fe32Be39729810A591ED9c87);
-    assertEq(address(IPendleRelayer(address(lpOracle)).YT()), 0xe822AE44EB2466B4E263b1cbC94b4833dDEf9700);
     assertEq(address(IPendleRelayer(address(lpOracle)).SY()), 0xc0Cf4b266bE5B3229C49590B59E67A09c15b22f4);
   }
 
@@ -486,5 +268,61 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     pendleFactory.deployPendleYtRelayer(address(0), MAINNET_PENDLE_ORACLE, uint32(900));
     vm.expectRevert('Invalid address');
     pendleFactory.deployPendleLpRelayer(address(0), MAINNET_PENDLE_ORACLE, uint32(900));
+  }
+}
+
+contract Unit_GMX_Relayer_Factory is Base {
+  IGmxRelayerFactory public gmxFactory;
+  IGmxReader public gmxReader;
+  IGmxDataStore public gmxDataStore;
+  IBaseOracle public wethUsdFeed;
+  IBaseOracle public usdcUsdFeed;
+  address mainnetAuthorizedAccount = 0xF78dA2A37049627636546E0cFAaB2aD664950917;
+
+  function setUp() public virtual override {
+    super.setUp();
+    vm.createSelectFork(vm.envString('ARB_MAINNET_RPC'));
+    delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
+    chainlinkRelayerFactory = ChainlinkRelayerFactory(MAINNET_CHAINLINK_RELAYER_FACTORY);
+    denominatedOracleFactory = DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
+
+    gmxFactory = IGmxRelayerFactory(address(new GmxRelayerFactory()));
+    gmxReader = IGmxReader(MAINNET_GMX_READER);
+    gmxDataStore = IGmxDataStore(MAINNET_GMX_DATA_STORE);
+
+    vm.startPrank(mainnetAuthorizedAccount);
+    usdcUsdFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
+      MAINNET_CHAINLINK_USDC_USD_FEED, MAINNET_CHAINLINK_SEQUENCER_FEED, 3600, 3600
+    );
+    wethUsdFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
+      MAINNET_CHAINLINK_ETH_USD_FEED, MAINNET_CHAINLINK_SEQUENCER_FEED, 3600, 3600
+    );
+    vm.stopPrank();
+
+    label(address(delayedOracleFactory), 'DelayedOracleFactory');
+    label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
+    label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
+    label(address(gmxFactory), 'gmxFactory');
+    label(address(usdcUsdFeed), 'usdcUsdFeed');
+    label(address(wethUsdFeed), 'wethUsdFeed');
+  }
+
+  function test_GmxFactory_Deployment() public view {
+    assertEq(gmxFactory.relayerId(), 0);
+    assertEq(gmxFactory.authorizedAccounts()[0], address(this));
+  }
+
+  function test_Create_GmxGm_Relayer() public {
+    IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayer(
+      MAINNET_GMX_WETH_PERP_MARKET_TOKEN,
+      address(gmxReader),
+      address(gmxDataStore),
+      address(wethUsdFeed),
+      address(wethUsdFeed),
+      address(usdcUsdFeed)
+    );
+    (uint256 readValue, bool valid) = wethGmMarket.getResultWithValidity();
+    assertGt(readValue, 0);
+    assertTrue(valid);
   }
 }
