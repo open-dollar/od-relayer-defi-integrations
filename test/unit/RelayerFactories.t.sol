@@ -22,7 +22,6 @@ import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
-import 'forge-std/console2.sol';
 
 abstract contract Base is DSTestPlus {
   address deployer = label('deployer');
@@ -313,7 +312,6 @@ contract Unit_GMX_Relayer_Factory is Base {
   }
 
   function test_Create_GmxGm_Relayer() public {
-    // vm.warp(block.timestamp + 3700);
     IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayer(
       MAINNET_GMX_WETH_PERP_MARKET_TOKEN,
       address(gmxReader),

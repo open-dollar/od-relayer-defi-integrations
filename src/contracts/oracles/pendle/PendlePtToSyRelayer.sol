@@ -20,6 +20,13 @@ contract PendlePtToSyRelayer {
   uint32 public twapDuration;
   string public symbol;
 
+  /**
+   * @dev at the end of the constructor we must call IPMarket(market).increaseObservationsCardinalityNext(cardinalityRequired) and wait
+   * for at least the twapDuration, to allow data population.
+   * @param _market the address of the pendle market we want to get the prices from
+   * @param _oracle the pendle oracle contract
+   * @param _twapDuration the desired TWAP duration in seconds (recommended 900s);
+   */
   constructor(address _market, address _oracle, uint32 _twapDuration) {
     require(_market != address(0) && _oracle != address(0), 'Invalid address');
     require(_twapDuration != uint32(0), 'Invalid TWAP duration');
@@ -34,10 +41,7 @@ contract PendlePtToSyRelayer {
 
     // test if oracle is ready
     (bool increaseCardinalityRequired,, bool oldestObservationSatisfied) = oracle.getOracleState(_market, _twapDuration);
-    // It's required to call IPMarket(market).increaseObservationsCardinalityNext(cardinalityRequired) and wait
-    // for at least the twapDuration, to allow data population.
-    // also
-    // It's necessary to wait for at least the twapDuration, to allow data population.
+
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');
   }
 
