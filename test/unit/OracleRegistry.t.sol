@@ -157,3 +157,33 @@ contract Unit_OracleRegistry_AddOracle is Base {
     oracleRegistry.addOracle(address(123_456_789), IBaseOracle(MAINNET_DENOMINATED_RETH_USD_ORACLE));
   }
 }
+
+contract Unit_GmxGmRelayerWithRegistry is Base {
+  IGmxRelayerFactory public gmxFactory;
+  IGmxReader public gmxReader;
+  IGmxDataStore public gmxDataStore;
+
+  function setUp() public virtual override {
+    super.setUp();
+    gmxFactory = IGmxRelayerFactory(address(new GmxRelayerFactory()));
+    gmxReader = IGmxReader(MAINNET_GMX_READER);
+    gmxDataStore = IGmxDataStore(MAINNET_GMX_DATA_STORE);
+
+    label(address(delayedOracleFactory), 'DelayedOracleFactory');
+    label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
+    label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
+    label(address(gmxFactory), 'gmxFactory');
+  }
+
+  function test_Create_GmxGm_Relayer() public {
+    // vm.warp(block.timestamp + 3700);
+    IBaseOracle wethGmMarket = gmxFactory.deployGmxGmRelayerWithRegistry(
+      MAINNET_GMX_WETH_PERP_MARKET_TOKEN, address(gmxReader), address(gmxDataStore), address(oracleRelayer)
+    );
+    (uint256 readValue, bool valid) = wethGmMarket.getResultWithValidity();
+    assertGt(readValue, 0);
+    assertTrue(valid);
+  }
+
+  function test_DeployGmGmxRelayerWithRegistry() public {}
+}
