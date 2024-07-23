@@ -21,8 +21,9 @@ contract PendlePtToSyRelayer {
   string public symbol;
 
   /**
-   * @dev at the end of the constructor we must call IPMarket(market).increaseObservationsCardinalityNext(cardinalityRequired) and wait
-   * for at least the twapDuration, to allow data population.
+   * @dev at the end of the constructor we must call IPMarket(market).getOracleState(_market, _twapDuration) and check that
+   * increaseObservationsCardinalityRequired is false.  If not we must wait for at least the twapDuration,
+   * to allow data population.
    * @param _market the address of the pendle market we want to get the prices from
    * @param _oracle the pendle oracle contract
    * @param _twapDuration the desired TWAP duration in seconds (recommended 900s);
