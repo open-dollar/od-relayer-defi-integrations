@@ -164,8 +164,8 @@ interface IStandardizedYield is IERC20Metadata {
 
   /**
    * @notice Calculates the a mount of tokens to be given for a potential share redemption
-   * @param tokenIn address of the token being claimed
-   * @param amountTokenToDeposit the amount of the shares to be redeemed
+   * @param tokenOut address of the token being claimed
+   * @param amountSharesToRedeem the amount of the shares to be redeemed
    * @return amountTokenOut the amount of token you would get if this deposit was made
    */
   function previewRedeem(address tokenOut, uint256 amountSharesToRedeem) external view returns (uint256 amountTokenOut);

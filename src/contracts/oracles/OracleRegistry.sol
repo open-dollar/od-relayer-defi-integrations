@@ -59,6 +59,10 @@ contract OracleRegistry is Authorizable, IOracleRegistry {
     return address(usdDenominatedFeed[_token]) != address(0);
   }
 
+  function symbol(address _token) public view returns (string memory _symbol) {
+    _symbol = usdDenominatedFeed[_token].symbol();
+  }
+
   function _isValidOracle(address _oracle) internal view returns (bool) {
     (, bytes memory _data) = _oracle.staticcall(abi.encodeWithSelector(IBaseOracle.symbol.selector));
     return _data.length != 0;
