@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 contract MockSequencerFeed {
   uint256 internal constant _ARBITRARY_DATA = 1;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import {OracleUtils} from '@gmx/contracts/oracle/OracleUtils.sol';
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
@@ -8,7 +8,6 @@ import {GmxPrice} from '@libraries/gmx/GmxPrice.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
-import 'forge-std/console2.sol';
 /**
  * @title  GmxGmRelayer
  * @notice This contracts transforms a Gmx GM oracle into a standard IBaseOracle feed

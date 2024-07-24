@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import '@interfaces/oracles/pendle/IPOracle.sol';
 import '@interfaces/oracles/pendle/IPMarket.sol';
-import 'forge-std/console2.sol';
 /**
  * @title  PendleRelayer
  * @notice This contracts transforms a Pendle TWAP price feed into a standard IBaseOracle feed
@@ -20,6 +19,14 @@ contract PendlePtToSyRelayer {
   uint32 public twapDuration;
   string public symbol;
 
+  /**
+   * @dev at the end of the constructor we must call IPMarket(market).getOracleState(_market, _twapDuration) and check that
+   * increaseObservationsCardinalityRequired is false.  If not we must wait for at least the twapDuration,
+   * to allow data population.
+   * @param _market the address of the pendle market we want to get the prices from
+   * @param _oracle the pendle oracle contract
+   * @param _twapDuration the desired TWAP duration in seconds (recommended 900s);
+   */
   constructor(address _market, address _oracle, uint32 _twapDuration) {
     require(_market != address(0) && _oracle != address(0), 'Invalid address');
     require(_twapDuration != uint32(0), 'Invalid TWAP duration');
@@ -32,12 +39,8 @@ contract PendlePtToSyRelayer {
 
     symbol = string(abi.encodePacked(PT.symbol(), ' / ', SY.symbol()));
 
-    // test if oracle is ready
     (bool increaseCardinalityRequired,, bool oldestObservationSatisfied) = oracle.getOracleState(_market, _twapDuration);
-    // It's required to call IPMarket(market).increaseObservationsCardinalityNext(cardinalityRequired) and wait
-    // for at least the twapDuration, to allow data population.
-    // also
-    // It's necessary to wait for at least the twapDuration, to allow data population.
+
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');
   }
 
