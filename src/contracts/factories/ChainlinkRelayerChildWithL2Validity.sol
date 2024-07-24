@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.24;
 
 import {ChainlinkRelayerWithL2Validity} from '@contracts/oracles/ChainlinkRelayerWithL2Validity.sol';
 import {FactoryChild} from '@contracts/factories/FactoryChild.sol';

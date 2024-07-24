@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.24;
 
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {Math, WAD} from '@libraries/Math.sol';

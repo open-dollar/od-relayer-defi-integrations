@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.24;
 
 import '@interfaces/oracles/pendle/IPOracle.sol';
 import '@interfaces/oracles/pendle/IPMarket.sol';
-import 'forge-std/console2.sol';
 /**
  * @title  PendleRelayer
  * @notice This contracts transforms a Pendle TWAP price feed into a standard IBaseOracle feed

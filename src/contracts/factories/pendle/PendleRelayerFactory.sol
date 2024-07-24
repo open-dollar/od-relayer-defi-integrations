@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.24;
 
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {PendlePtToSyRelayerChild} from '@contracts/factories/pendle/PendlePtToSyRelayerChild.sol';
 import {PendleYtToSyRelayerChild} from '@contracts/factories/pendle/PendleYtToSyRelayerChild.sol';
 import {PendleLpToSyRelayerChild} from '@contracts/factories/pendle/PendleLpToSyRelayerChild.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
-import 'forge-std/console2.sol';
 
 contract PendleRelayerFactory is Authorizable {
   uint256 public relayerId;
