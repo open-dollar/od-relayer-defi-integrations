@@ -49,4 +49,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-          slug: open-dollar/od-relayer
+          slug: ${{ github.repository_owner }}/${{ github.repository }}
