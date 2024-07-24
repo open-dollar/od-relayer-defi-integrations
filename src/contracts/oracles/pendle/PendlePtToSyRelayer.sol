@@ -40,7 +40,6 @@ contract PendlePtToSyRelayer {
 
     symbol = string(abi.encodePacked(PT.symbol(), ' / ', SY.symbol()));
 
-    // test if oracle is ready
     (bool increaseCardinalityRequired,, bool oldestObservationSatisfied) = oracle.getOracleState(_market, _twapDuration);
 
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');
