@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.24;
+pragma solidity 0.8.20;
 
 import {PendlePtToSyRelayer} from '@contracts/oracles/pendle/PendlePtToSyRelayer.sol';
 import {FactoryChild} from '@contracts/factories/FactoryChild.sol';
