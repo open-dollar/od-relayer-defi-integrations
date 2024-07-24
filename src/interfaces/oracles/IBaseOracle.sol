@@ -14,7 +14,7 @@ interface IBaseOracle {
 
   /**
    * @dev Fetch the latest oracle result and whether it is valid or not
-   * @dev    This method should never revert
+   * @dev This method should never revert
    */
   function getResultWithValidity() external view returns (uint256 _result, bool _validity);
 

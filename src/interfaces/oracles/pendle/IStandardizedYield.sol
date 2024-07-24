@@ -4,7 +4,9 @@ pragma solidity ^0.8.20;
 import {IERC20Metadata} from '@interfaces/utils/IERC20Metadata.sol';
 
 interface IStandardizedYield is IERC20Metadata {
-  /// @dev Emitted when any base tokens is deposited to mint shares
+  /**
+   * @dev Emitted when any base tokens is deposited to mint shares
+   */
   event Deposit(
     address indexed caller,
     address indexed receiver,
@@ -13,7 +15,9 @@ interface IStandardizedYield is IERC20Metadata {
     uint256 amountSyOut
   );
 
-  /// @dev Emitted when any shares are redeemed for base tokens
+  /**
+   * @dev Emitted when any shares are redeemed for base tokens
+   */
   event Redeem(
     address indexed caller,
     address indexed receiver,
@@ -22,13 +26,17 @@ interface IStandardizedYield is IERC20Metadata {
     uint256 amountTokenOut
   );
 
-  /// @dev check `assetInfo()` for more information
+  /**
+   * @dev check `assetInfo()` for more information
+   */
   enum AssetType {
     TOKEN,
     LIQUIDITY
   }
 
-  /// @dev Emitted when (`user`) claims their rewards
+  /**
+   * @dev Emitted when (`user`) claims their rewards
+   */
   event ClaimRewards(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
   /**
@@ -97,8 +105,16 @@ interface IStandardizedYield is IERC20Metadata {
    */
   function accruedRewards(address user) external view returns (uint256[] memory rewardAmounts);
 
+  /**
+   * @notice returns the indexes of the Current rewards
+   * @return indexes an array of reward indices
+   */
   function rewardIndexesCurrent() external returns (uint256[] memory indexes);
 
+  /**
+   * @notice returns the indexes of stored rewards
+   * @return indexes an array of reward indices
+   */
   function rewardIndexesStored() external view returns (uint256[] memory indexes);
 
   /**
@@ -121,15 +137,37 @@ interface IStandardizedYield is IERC20Metadata {
    */
   function getTokensOut() external view returns (address[] memory res);
 
+  /**
+   * @notice Checks if an incoming token is valid
+   * @param token the token address
+   * @return true if this is a valid token
+   */
   function isValidTokenIn(address token) external view returns (bool);
 
+  /**
+   * @notice Checks if an outgoing token is valid
+   * @param token the token address
+   * @return true if this is a valid token
+   */
   function isValidTokenOut(address token) external view returns (bool);
 
+  /**
+   * @notice Calculates the a mount of shares to be given for a potential token deposit
+   * @param tokenIn address of the token being deposited
+   * @param amountTokenToDeposit the amount of the token to be deposited
+   * @return amountSharesOut the amount of shares you would get if this deposit was made
+   */
   function previewDeposit(
     address tokenIn,
     uint256 amountTokenToDeposit
   ) external view returns (uint256 amountSharesOut);
 
+  /**
+   * @notice Calculates the a mount of tokens to be given for a potential share redemption
+   * @param tokenIn address of the token being claimed
+   * @param amountTokenToDeposit the amount of the shares to be redeemed
+   * @return amountTokenOut the amount of token you would get if this deposit was made
+   */
   function previewRedeem(address tokenOut, uint256 amountSharesToRedeem) external view returns (uint256 amountTokenOut);
 
   /**

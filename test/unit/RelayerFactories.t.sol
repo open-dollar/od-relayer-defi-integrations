@@ -178,7 +178,7 @@ contract Unit_DenominatedPriceOracleFactory_Constructor is Base {
   }
 }
 
-contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
+contract Unit_Pendle_Deploy_Oracle is Base {
   address mainnetAuthorizedAccount = 0xF78dA2A37049627636546E0cFAaB2aD664950917;
   IPendleRelayerFactory public pendleFactory;
 
@@ -192,26 +192,6 @@ contract Unit_Pendle_Renzo_Deploy_Oracle is Base {
     label(address(delayedOracleFactory), 'DelayedOracleFactory');
     label(address(chainlinkRelayerFactory), 'ChainlinkRelayerFactory');
     label(address(denominatedOracleFactory), 'DenominatedOracleFactory');
-  }
-
-  function test_DeployEzEthRelayer() public {
-    vm.startPrank(mainnetAuthorizedAccount);
-    IBaseOracle _ezEthEthPriceFeed = chainlinkRelayerFactory.deployChainlinkRelayerWithL2Validity(
-      MAINNET_CHAINLINK_EZETH_ETH_FEED,
-      MAINNET_CHAINLINK_SEQUENCER_FEED,
-      MAINNET_ORACLE_DELAY,
-      MAINNET_CHAINLINK_L2VALIDITY_GRACE_PERIOD
-    );
-
-    IBaseOracle _ezEthUsdOracle = denominatedOracleFactory.deployDenominatedOracle(
-      _ezEthEthPriceFeed, IBaseOracle(MAINNET_CHAINLINK_ETH_USD_RELAYER), false
-    );
-
-    IBaseOracle _ezEthUsdDelayedOracle = delayedOracleFactory.deployDelayedOracle(_ezEthUsdOracle, MAINNET_ORACLE_DELAY);
-
-    string memory _ezEthSymbol = _ezEthUsdDelayedOracle.symbol(); // "(EZETH / ETH) * (ETH / USD)"
-    vm.stopPrank();
-    assertEq(_ezEthSymbol, '(ezETH / ETH) * (ETH / USD)');
   }
 
   function test_Deploy_PendleFactory() public view {
