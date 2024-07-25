@@ -63,6 +63,7 @@ contract GmxGmRelayerWithRegistry is IBaseOracle {
     _value = _getCurrentPrice();
   }
 
+  /// @notice aggregates the registry oracles and retreives the priec from the gm reader
   function _getCurrentPrice() internal view returns (uint256) {
     (uint256 longTokenPrice,) = registry.getResultWithValidity(marketProps.longToken);
 

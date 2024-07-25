@@ -13,6 +13,7 @@ contract ChainlinkRelayerWithL2Validity is IBaseOracle, ChainlinkRelayer, DataCo
     uint256 _gracePeriod
   ) ChainlinkRelayer(_priceAggregator, _staleThreshold) DataConsumerSequencerCheck(_sequencerAggregator, _gracePeriod) {}
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity()
     public
     view
@@ -25,6 +26,7 @@ contract ChainlinkRelayerWithL2Validity is IBaseOracle, ChainlinkRelayer, DataCo
     }
   }
 
+  /// @inheritdoc IBaseOracle
   function read() public view override(IBaseOracle, ChainlinkRelayer) returns (uint256 _result) {
     require(getSequencerFeedValidation(), 'SequencerDown');
     _result = super.read();

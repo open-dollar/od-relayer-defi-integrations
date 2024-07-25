@@ -41,6 +41,7 @@ contract DenominatedOracle is IBaseOracle {
     }
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     (uint256 _priceSourceValue, bool _priceSourceValidity) = priceSource.getResultWithValidity();
     (uint256 _denominationPriceSourceValue, bool _denominationPriceSourceValidity) =
@@ -56,6 +57,7 @@ contract DenominatedOracle is IBaseOracle {
     _validity = _priceSourceValidity && _denominationPriceSourceValidity;
   }
 
+  /// @inheritdoc IBaseOracle
   function read() external view returns (uint256 _result) {
     uint256 _priceSourceValue = priceSource.read();
     uint256 _denominationPriceSourceValue = denominationPriceSource.read();

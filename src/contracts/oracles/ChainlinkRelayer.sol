@@ -34,6 +34,7 @@ contract ChainlinkRelayer is IBaseOracle {
     symbol = chainlinkFeed.description();
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() public view virtual returns (uint256 _result, bool _validity) {
     // Fetch values from Chainlink
     (, int256 _aggregatorResult,, uint256 _aggregatorTimestamp,) = chainlinkFeed.latestRoundData();
@@ -45,6 +46,7 @@ contract ChainlinkRelayer is IBaseOracle {
     _validity = _aggregatorResult > 0 && _isValidFeed(_aggregatorTimestamp);
   }
 
+  /// @inheritdoc IBaseOracle
   function read() public view virtual returns (uint256 _result) {
     // Fetch values from Chainlink
     (, int256 _aggregatorResult,, uint256 _aggregatorTimestamp,) = chainlinkFeed.latestRoundData();
