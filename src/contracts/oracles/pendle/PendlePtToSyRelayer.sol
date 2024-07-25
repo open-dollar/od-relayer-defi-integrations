@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import {IPOracle} from '@interfaces/oracles/pendle/IPOracle.sol';
 import {IPMarket, IStandardizedYield, IPPrincipalToken} from '@interfaces/oracles/pendle/IPMarket.sol';
@@ -40,7 +40,6 @@ contract PendlePtToSyRelayer is IBaseOracle {
 
     symbol = string(abi.encodePacked(PT.symbol(), ' / ', SY.symbol()));
 
-    // test if oracle is ready
     (bool increaseCardinalityRequired,, bool oldestObservationSatisfied) = oracle.getOracleState(_market, _twapDuration);
 
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');

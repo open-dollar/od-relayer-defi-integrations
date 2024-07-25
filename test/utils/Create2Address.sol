@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 /// @title Provides functions for deriving a contract address using Create2
 library Create2Address {

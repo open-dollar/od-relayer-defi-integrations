@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {GmxGmRelayerChild} from './GmxGmRelayerChild.sol';
 import {GmxGmRelayerWithRegistryChild} from './GmxGmRelayerWithRegistryChild.sol';
-import 'forge-std/console2.sol';
 
 contract GmxRelayerFactory is Authorizable {
   uint256 public relayerId;

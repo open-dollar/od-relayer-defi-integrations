@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import '@script/Registry.s.sol';
 import {CommonMainnet} from '@script/Common.s.sol';
@@ -25,15 +25,16 @@ contract DeployRethPtToSyPendleRelayerMainnet is CommonMainnet {
       delayedOracleFactory.deployDelayedOracle(_rethToUSDOracle, MAINNET_ORACLE_DELAY);
 
     _rethToUSDOracleDelayedOracle.symbol();
+    _rethToUSDOracleDelayedOracle.getResultWithValidity();
     vm.stopBroadcast();
   }
 }
 
 // BROADCAST
-// source .env && forge script DeployWsethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY --account defaultKey --sender $DEFAULT_KEY_PUBLIC_ADDRESS
+// source .env && forge script DeployWstethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY --sender $DEFAULT_KEY_PUBLIC_ADDRESS --account defaultKey
 
 // SIMULATE
-// source .env && forge script DeployWsethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --account defaultKey --sender $DEFAULT_KEY_PUBLIC
+// source .env && forge script DeployWstethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --sender $DEFAULT_KEY_PUBLIC_ADDRESS
 
 contract DeployWstethPtToSyPendleRelayerMainnet is CommonMainnet {
   function run() public {
@@ -50,6 +51,7 @@ contract DeployWstethPtToSyPendleRelayerMainnet is CommonMainnet {
       delayedOracleFactory.deployDelayedOracle(_wstethToUSDOracle, MAINNET_ORACLE_DELAY);
 
     _wstethToUSDDelayedOracle.symbol();
+    _wstethToUSDDelayedOracle.getResultWithValidity();
     vm.stopBroadcast();
   }
 }

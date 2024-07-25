@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import {IPOracle} from '@interfaces/oracles/pendle/IPOracle.sol';
 import {IPMarket, IStandardizedYield, IPYieldToken} from '@interfaces/oracles/pendle/IPMarket.sol';
