@@ -2,10 +2,13 @@
 pragma solidity 0.8.20;
 
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
+import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 
-interface IChainlinkRelayerFactory {
+interface IChainlinkRelayerFactory is IAuthorizable {
   // --- Events ---
+  /// @notice emitted when a new chainlink relayer is deployed
   event NewChainlinkRelayer(address indexed _chainlinkRelayer, address _aggregator, uint256 _staleThreshold);
+  /// @notice emitted when a new chainlink relayer with L2 validity is deployed
   event NewChainlinkRelayerWithL2Validity(
     address indexed _chainlinkRelayer,
     address _priceAggregator,

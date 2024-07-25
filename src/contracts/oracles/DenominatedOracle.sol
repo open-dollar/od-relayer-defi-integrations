@@ -8,7 +8,7 @@ import {Math, WAD} from '@libraries/Math.sol';
  * @notice Transforms two price feeds with a shared token into a new denominated price feed between the other two tokens of the feeds
  * @dev    Requires an external base price feed with a shared token between the price source and the denomination price source
  */
-contract DenominatedOracle {
+contract DenominatedOracle is IBaseOracle {
   using Math for uint256;
 
   bool public immutable INVERTED;

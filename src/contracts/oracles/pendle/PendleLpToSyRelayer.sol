@@ -44,11 +44,13 @@ contract PendleLpToSyRelayer is IBaseOracle {
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result = oracle.getLpToSyRate(address(market), twapDuration);
     _validity = true;
   }
 
+  /// @inheritdoc IBaseOracle
   function read() external view returns (uint256 _value) {
     _value = oracle.getLpToSyRate(address(market), twapDuration);
   }

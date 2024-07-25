@@ -5,20 +5,11 @@ import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {ChainlinkRelayerChild} from '@contracts/factories/ChainlinkRelayerChild.sol';
 import {ChainlinkRelayerChildWithL2Validity} from '@contracts/factories/ChainlinkRelayerChildWithL2Validity.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
+import {IChainlinkRelayerFactory} from '@interfaces/factories/IChainlinkRelayerFactory.sol';
 
-contract ChainlinkRelayerFactory is Authorizable {
+contract ChainlinkRelayerFactory is Authorizable, IChainlinkRelayerFactory {
   uint256 public relayerId;
   uint256 public relayerWithL2ValidityId;
-
-  // --- Events ---
-  event NewChainlinkRelayer(address indexed _chainlinkRelayer, address _aggregator, uint256 _staleThreshold);
-  event NewChainlinkRelayerWithL2Validity(
-    address indexed _chainlinkRelayer,
-    address _priceAggregator,
-    address _sequencerAggregator,
-    uint256 _staleThreshold,
-    uint256 _gracePeriod
-  );
 
   // --- Data ---
   mapping(uint256 => address) public relayerById;
@@ -29,6 +20,7 @@ contract ChainlinkRelayerFactory is Authorizable {
 
   // --- Methods ---
 
+  /// @inheritdoc IChainlinkRelayerFactory
   function deployChainlinkRelayer(
     address _aggregator,
     uint256 _staleThreshold
@@ -39,6 +31,7 @@ contract ChainlinkRelayerFactory is Authorizable {
     emit NewChainlinkRelayer(address(_chainlinkRelayer), _aggregator, _staleThreshold);
   }
 
+  /// @inheritdoc IChainlinkRelayerFactory
   function deployChainlinkRelayerWithL2Validity(
     address _priceAggregator,
     address _sequencerAggregator,

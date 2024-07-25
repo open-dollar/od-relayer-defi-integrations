@@ -52,11 +52,13 @@ contract GmxGmRelayerWithRegistry is IBaseOracle {
     require(registry.isSupported(marketProps.shortToken), 'Oracle registry: Unsupported token');
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result = _getCurrentPrice();
     _validity = true;
   }
 
+  /// @inheritdoc IBaseOracle
   function read() external view returns (uint256 _value) {
     _value = _getCurrentPrice();
   }

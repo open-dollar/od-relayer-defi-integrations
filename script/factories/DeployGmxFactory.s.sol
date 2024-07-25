@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.26;
+pragma solidity 0.8.20;
 
 import {Script} from 'forge-std/Script.sol';
 import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';

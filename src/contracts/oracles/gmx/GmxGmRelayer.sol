@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {OracleUtils} from '@gmx/contracts/oracle/OracleUtils.sol';
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
-import {IOracleProvider} from '@gmx/contracts/oracle/IOracleProvider.sol';
 import {GmxPrice} from '@libraries/gmx/GmxPrice.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
+
 /**
  * @title  GmxGmRelayer
+ * @author OpenDollar
  * @notice This contracts transforms a Gmx GM oracle into a standard IBaseOracle feed
  *
  */
-
 contract GmxGmRelayer is IBaseOracle {
   string public symbol;
 
@@ -56,11 +55,13 @@ contract GmxGmRelayer is IBaseOracle {
     shortTokenOracle = IBaseOracle(_shortTokenOracle);
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result = _getCurrentPrice();
     _validity = true;
   }
 
+  /// @inheritdoc IBaseOracle
   function read() external view returns (uint256 _value) {
     _value = _getCurrentPrice();
   }
