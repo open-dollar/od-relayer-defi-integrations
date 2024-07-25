@@ -3,8 +3,9 @@ pragma solidity 0.8.26;
 
 import {ChainlinkRelayer} from '@contracts/oracles/ChainlinkRelayer.sol';
 import {DataConsumerSequencerCheck} from '@contracts/oracles/DataConsumerSequencerCheck.sol';
+import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 
-contract ChainlinkRelayerWithL2Validity is ChainlinkRelayer, DataConsumerSequencerCheck {
+contract ChainlinkRelayerWithL2Validity is IBaseOracle, ChainlinkRelayer, DataConsumerSequencerCheck {
   constructor(
     address _priceAggregator,
     address _sequencerAggregator,
@@ -12,14 +13,19 @@ contract ChainlinkRelayerWithL2Validity is ChainlinkRelayer, DataConsumerSequenc
     uint256 _gracePeriod
   ) ChainlinkRelayer(_priceAggregator, _staleThreshold) DataConsumerSequencerCheck(_sequencerAggregator, _gracePeriod) {}
 
-  function getResultWithValidity() public view override returns (uint256 _result, bool _validity) {
+  function getResultWithValidity()
+    public
+    view
+    override(IBaseOracle, ChainlinkRelayer)
+    returns (uint256 _result, bool _validity)
+  {
     (_result, _validity) = super.getResultWithValidity();
     if (_validity) {
       _validity = getSequencerFeedValidation();
     }
   }
 
-  function read() public view override returns (uint256 _result) {
+  function read() public view override(IBaseOracle, ChainlinkRelayer) returns (uint256 _result) {
     require(getSequencerFeedValidation(), 'SequencerDown');
     _result = super.read();
   }

@@ -52,14 +52,14 @@ interface IOracleRegistry {
    * @param _token the address of the token who's result is being fetched
    * @return _result , _validity the oracle result and a bool indicating whether the price is valid
    */
-  function getResultWithValidity(address _token) external returns (uint256 _result, bool _validity);
+  function getResultWithValidity(address _token) external view returns (uint256 _result, bool _validity);
 
   /**
    * @notice Fetch the latest oracle result, reverts if invalid
    * @param _token the address of the token who's result is being fetched
    * @return _result
    */
-  function read(address _token) external returns (uint256 _result);
+  function read(address _token) external view returns (uint256 _result);
 
   /**
    * @notice Fetch the symbol of the token oracle

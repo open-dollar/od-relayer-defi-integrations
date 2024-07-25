@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.26;
 
-import '@interfaces/oracles/pendle/IPOracle.sol';
-import '@interfaces/oracles/pendle/IPMarket.sol';
-import 'forge-std/console2.sol';
+import {IPOracle} from '@interfaces/oracles/pendle/IPOracle.sol';
+import {IPMarket, IStandardizedYield, IPPrincipalToken} from '@interfaces/oracles/pendle/IPMarket.sol';
+import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
+
 /**
  * @title  PendleRelayer
  * @notice This contracts transforms a Pendle TWAP price feed into a standard IBaseOracle feed
  *
  */
-
-contract PendlePtToSyRelayer {
+contract PendlePtToSyRelayer is IBaseOracle {
   IStandardizedYield public SY;
   IPPrincipalToken public PT;
 

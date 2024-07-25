@@ -3,16 +3,31 @@ pragma solidity ^0.8.20;
 
 import {IERC20Metadata} from '@interfaces/utils/IERC20Metadata.sol';
 
+/**
+ * @title IRewardManager
+ * @author OpenDollar
+ * @dev interface pulled from https://github.com/pendle-finance/pendle-core-v2-public
+ */
 interface IRewardManager {
   function userReward(address token, address user) external view returns (uint128 index, uint128 accrued);
 }
 
+/**
+ * @title IPInterestManagerYT
+ * @author OpenDollar
+ * @dev interface pulled from https://github.com/pendle-finance/pendle-core-v2-public
+ */
 interface IPInterestManagerYT {
   event CollectInterestFee(uint256 amountInterestFee);
 
   function userInterest(address user) external view returns (uint128 lastPYIndex, uint128 accruedInterest);
 }
 
+/**
+ * @title IPYieldToken
+ * @author OpenDollar
+ * @dev interface pulled from https://github.com/pendle-finance/pendle-core-v2-public
+ */
 interface IPYieldToken is IERC20Metadata, IRewardManager, IPInterestManagerYT {
   event NewInterestIndex(uint256 indexed newIndex);
 

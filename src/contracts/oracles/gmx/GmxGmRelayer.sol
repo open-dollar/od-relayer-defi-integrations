@@ -15,7 +15,7 @@ import 'forge-std/console2.sol';
  *
  */
 
-contract GmxGmRelayer {
+contract GmxGmRelayer is IBaseOracle {
   string public symbol;
 
   // ============================ Constants ============================

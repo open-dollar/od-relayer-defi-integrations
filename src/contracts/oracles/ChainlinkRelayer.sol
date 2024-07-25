@@ -2,13 +2,14 @@
 pragma solidity 0.8.26;
 
 import {IChainlinkOracle} from '@interfaces/oracles/IChainlinkOracle.sol';
+import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 
 /**
  * @title  ChainlinkRelayer
  * @notice This contracts transforms a Chainlink price feed into a standard IBaseOracle feed
  *         It also verifies that the reading is new enough, compared to a STALE_THRESHOLD
  */
-contract ChainlinkRelayer {
+contract ChainlinkRelayer is IBaseOracle {
   uint256 public immutable STALE_THRESHOLD;
   int256 public immutable MULTIPLIER;
 

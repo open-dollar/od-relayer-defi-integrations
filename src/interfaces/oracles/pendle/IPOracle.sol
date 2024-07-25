@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.20;
 
-// a minimal interface to interact with Pendle TWAP oracles
+/**
+ * @title IPOracle
+ * @author openDollar
+ * @notice a minimal interface to interact with Pendle TWAP oracles
+ */
 interface IPOracle {
   /*///////////////////////////////////////////////////////////////
                     PT, YT, LP to SY
