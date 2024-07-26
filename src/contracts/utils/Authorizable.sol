@@ -2,13 +2,14 @@
 pragma solidity 0.8.20;
 
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
+import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 
 /**
  * @title  Authorizable
  * @notice Implements authorization control for contracts
  * @dev    Authorization control is boolean and handled by `onlyAuthorized` modifier
  */
-abstract contract Authorizable {
+abstract contract Authorizable is IAuthorizable {
   // --- Events ---
 
   /**

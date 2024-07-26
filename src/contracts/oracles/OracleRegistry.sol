@@ -25,6 +25,7 @@ contract OracleRegistry is Authorizable, IOracleRegistry {
     _;
   }
 
+  /// @inheritdoc IOracleRegistry
   function addOracles(address[] memory _tokens, IBaseOracle[] memory _oracles) public isAuthorized {
     require(_tokens.length == _oracles.length, 'ORACLE REGISTRY: LENGTH MISMATCH');
     for (uint256 i; i < _tokens.length; i++) {
@@ -32,16 +33,19 @@ contract OracleRegistry is Authorizable, IOracleRegistry {
     }
   }
 
+  /// @inheritdoc IOracleRegistry
   function addOracle(address _token, IBaseOracle _denominatedOracle) public isAuthorized {
     require(_isValidOracle(address(_denominatedOracle)), 'ORACLE REGISTRY: INVALID ORACLE');
     require(_isValidToken(_token), 'ORACLE REGISTRY: INVALID TOKEN');
     usdDenominatedFeed[_token] = _denominatedOracle;
   }
 
+  /// @inheritdoc IOracleRegistry
   function clearOracle(address _token) public isAuthorized {
     delete usdDenominatedFeed[_token];
   }
 
+  /// @inheritdoc IOracleRegistry
   function getResultWithValidity(address _token)
     public
     view
@@ -51,12 +55,19 @@ contract OracleRegistry is Authorizable, IOracleRegistry {
     (_result, _validity) = usdDenominatedFeed[_token].getResultWithValidity();
   }
 
+  /// @inheritdoc IOracleRegistry
   function read(address _token) public view isSupportedToken(_token) returns (uint256 _result) {
     _result = usdDenominatedFeed[_token].read();
   }
 
+  /// @inheritdoc IOracleRegistry
   function isSupported(address _token) public view returns (bool) {
     return address(usdDenominatedFeed[_token]) != address(0);
+  }
+
+  /// @inheritdoc IOracleRegistry
+  function symbol(address _token) public view returns (string memory _symbol) {
+    _symbol = usdDenominatedFeed[_token].symbol();
   }
 
   function _isValidOracle(address _oracle) internal view returns (bool) {

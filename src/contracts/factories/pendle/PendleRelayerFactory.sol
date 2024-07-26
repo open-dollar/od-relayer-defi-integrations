@@ -2,18 +2,14 @@
 pragma solidity 0.8.20;
 
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
+import {IPendleRelayerFactory} from '@interfaces/factories/IPendleRelayerFactory.sol';
 import {PendlePtToSyRelayerChild} from '@contracts/factories/pendle/PendlePtToSyRelayerChild.sol';
 import {PendleYtToSyRelayerChild} from '@contracts/factories/pendle/PendleYtToSyRelayerChild.sol';
 import {PendleLpToSyRelayerChild} from '@contracts/factories/pendle/PendleLpToSyRelayerChild.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 
-contract PendleRelayerFactory is Authorizable {
+contract PendleRelayerFactory is Authorizable, IPendleRelayerFactory {
   uint256 public relayerId;
-
-  // --- Events ---
-  event NewPendlePtRelayer(address indexed _market, address _oracle, uint32 _twapDuration);
-  event NewPendleYtRelayer(address indexed _market, address _oracle, uint32 _twapDuration);
-  event NewPendleLpRelayer(address indexed _market, address _oracle, uint32 _twapDuration);
 
   // --- Data ---
   mapping(uint256 => address) public relayerById;
@@ -23,6 +19,7 @@ contract PendleRelayerFactory is Authorizable {
 
   // --- Methods ---
 
+  /// @inheritdoc IPendleRelayerFactory
   function deployPendlePtRelayer(
     address _market,
     address _oracle,
@@ -34,6 +31,7 @@ contract PendleRelayerFactory is Authorizable {
     emit NewPendlePtRelayer(address(_market), _oracle, _twapDuration);
   }
 
+  /// @inheritdoc IPendleRelayerFactory
   function deployPendleYtRelayer(
     address _market,
     address _oracle,
@@ -45,6 +43,7 @@ contract PendleRelayerFactory is Authorizable {
     emit NewPendleYtRelayer(address(_market), _oracle, _twapDuration);
   }
 
+  /// @inheritdoc IPendleRelayerFactory
   function deployPendleLpRelayer(
     address _market,
     address _oracle,

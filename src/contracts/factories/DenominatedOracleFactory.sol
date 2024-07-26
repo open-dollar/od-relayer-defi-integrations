@@ -4,14 +4,10 @@ pragma solidity 0.8.20;
 import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {DenominatedOracleChild} from '@contracts/factories/DenominatedOracleChild.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
+import {IDenominatedOracleFactory} from '@interfaces/factories/IDenominatedOracleFactory.sol';
 
-contract DenominatedOracleFactory is Authorizable {
+contract DenominatedOracleFactory is Authorizable, IDenominatedOracleFactory {
   uint256 public oracleId;
-
-  // --- Events ---
-  event NewDenominatedOracle(
-    address indexed _denominatedOracle, address _priceSource, address _denominationPriceSource, bool _inverted
-  );
 
   // --- Data ---
   mapping(uint256 => address) public oracleById;
@@ -20,7 +16,7 @@ contract DenominatedOracleFactory is Authorizable {
   constructor() Authorizable(msg.sender) {}
 
   // --- Methods ---
-
+  /// @inheritdoc IDenominatedOracleFactory
   function deployDenominatedOracle(
     IBaseOracle _priceSource,
     IBaseOracle _denominationPriceSource,

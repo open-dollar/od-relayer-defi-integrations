@@ -7,8 +7,6 @@ import {FactoryChild} from '@contracts/factories/FactoryChild.sol';
 contract GmxGmRelayerChild is GmxGmRelayer, FactoryChild {
   // --- Init ---
 
-  /**
-   */
   constructor(
     address _marketToken,
     address _gmxReader,

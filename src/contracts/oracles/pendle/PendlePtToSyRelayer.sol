@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import '@interfaces/oracles/pendle/IPOracle.sol';
-import '@interfaces/oracles/pendle/IPMarket.sol';
+import {IPOracle} from '@interfaces/oracles/pendle/IPOracle.sol';
+import {IPMarket, IStandardizedYield, IPPrincipalToken} from '@interfaces/oracles/pendle/IPMarket.sol';
+import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
+
 /**
  * @title  PendleRelayer
  * @notice This contracts transforms a Pendle TWAP price feed into a standard IBaseOracle feed
  *
  */
-
-contract PendlePtToSyRelayer {
+contract PendlePtToSyRelayer is IBaseOracle {
   IStandardizedYield public SY;
   IPPrincipalToken public PT;
 
@@ -44,11 +45,13 @@ contract PendlePtToSyRelayer {
     require(!increaseCardinalityRequired && oldestObservationSatisfied, 'Oracle not ready');
   }
 
+  /// @inheritdoc IBaseOracle
   function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result = oracle.getPtToSyRate(address(market), twapDuration);
     _validity = true;
   }
 
+  /// @inheritdoc IBaseOracle
   function read() external view returns (uint256 _value) {
     _value = oracle.getPtToSyRate(address(market), twapDuration);
   }

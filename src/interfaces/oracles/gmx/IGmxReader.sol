@@ -10,7 +10,6 @@ import {GmxWithdrawal} from '@libraries/gmx/GmxWithdrawal.sol';
 
 /**
  * @title   IGmxReader
- *
  * @notice  GMX Reader Interface
  */
 interface IGmxReader {

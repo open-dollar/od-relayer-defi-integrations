@@ -6,13 +6,14 @@ import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
 import {IOracleRegistry} from '@interfaces/oracles/IOracleRegistry.sol';
+import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 
 /**
  * @title  GmxGmRelayer
  * @notice This contracts transforms a Gmx GM oracle into a standard IBaseOracle feed
  *
  */
-contract GmxGmRelayerWithRegistry {
+contract GmxGmRelayerWithRegistry is IBaseOracle {
   string public symbol;
 
   // ============================ Constants ============================
@@ -51,16 +52,19 @@ contract GmxGmRelayerWithRegistry {
     require(registry.isSupported(marketProps.shortToken), 'Oracle registry: Unsupported token');
   }
 
-  function getResultWithValidity() external returns (uint256 _result, bool _validity) {
+  /// @inheritdoc IBaseOracle
+  function getResultWithValidity() external view returns (uint256 _result, bool _validity) {
     _result = _getCurrentPrice();
     _validity = true;
   }
 
-  function read() external returns (uint256 _value) {
+  /// @inheritdoc IBaseOracle
+  function read() external view returns (uint256 _value) {
     _value = _getCurrentPrice();
   }
 
-  function _getCurrentPrice() internal returns (uint256) {
+  /// @notice aggregates the registry oracles and retreives the priec from the gm reader
+  function _getCurrentPrice() internal view returns (uint256) {
     (uint256 longTokenPrice,) = registry.getResultWithValidity(marketProps.longToken);
 
     GmxPrice.PriceProps memory longTokenPriceProps = GmxPrice.PriceProps({
@@ -83,7 +87,7 @@ contract GmxGmRelayerWithRegistry {
     GmxMarket.MarketProps memory _marketProps,
     GmxPrice.PriceProps memory _longTokenPriceProps,
     GmxPrice.PriceProps memory _shortTokenPriceProps
-  ) internal returns (uint256) {
+  ) internal view returns (uint256) {
     (uint256 indexTokenPrice,) = registry.getResultWithValidity(marketProps.indexToken);
 
     // Dolomite returns price as 36 decimals - token decimals

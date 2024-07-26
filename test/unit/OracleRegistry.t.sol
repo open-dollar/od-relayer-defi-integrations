@@ -22,7 +22,6 @@ import {IGmxReader} from '@interfaces/oracles/gmx/IGmxReader.sol';
 import {IGmxDataStore} from '@interfaces/oracles/gmx/IGmxDataStore.sol';
 import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';
 import {GmxMarket} from '@libraries/gmx/GmxMarket.sol';
-import 'forge-std/console2.sol';
 
 abstract contract Base is DSTestPlus {
   address deployer = label('deployer');
@@ -159,13 +158,13 @@ contract Unit_OracleRegistry_AddOracle is Base {
 }
 
 contract Unit_OracleRegistry_GetResultWithValidity is Base {
-  function test_GetResultWithValidity() public {
+  function test_GetResultWithValidity() public view {
     (uint256 _result, bool _validity) = oracleRegistry.getResultWithValidity(ETH);
     assertGt(_result, 0);
     assertTrue(_validity);
   }
 
-  function test_Read() public {
+  function test_Read() public view {
     uint256 _result = oracleRegistry.read(ETH);
     assertGt(_result, 0);
   }

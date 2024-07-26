@@ -5,12 +5,10 @@ import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {GmxGmRelayerChild} from './GmxGmRelayerChild.sol';
 import {GmxGmRelayerWithRegistryChild} from './GmxGmRelayerWithRegistryChild.sol';
+import {IGmxRelayerFactory} from '@interfaces/factories/IGmxRelayerFactory.sol';
 
-contract GmxRelayerFactory is Authorizable {
+contract GmxRelayerFactory is Authorizable, IGmxRelayerFactory {
   uint256 public relayerId;
-
-  // --- Events ---
-  event NewGmxGmRelayer(address _newGmxRelayerChild, address _marketToken);
 
   // --- Data ---
   mapping(uint256 => address) public relayerById;
@@ -20,6 +18,7 @@ contract GmxRelayerFactory is Authorizable {
 
   // --- Methods ---
 
+  /// @inheritdoc IGmxRelayerFactory
   function deployGmxGmRelayer(
     address _marketToken,
     address _gmxReader,
@@ -40,6 +39,7 @@ contract GmxRelayerFactory is Authorizable {
     emit NewGmxGmRelayer(address(_gmxGmRelayerChild), _marketToken);
   }
 
+  /// @inheritdoc IGmxRelayerFactory
   function deployGmxGmRelayerWithRegistry(
     address _marketToken,
     address _gmxReader,
