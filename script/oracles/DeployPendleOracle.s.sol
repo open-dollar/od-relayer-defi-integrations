@@ -7,9 +7,9 @@ import {IBaseOracle} from '@interfaces/oracles/IBaseOracle.sol';
 import 'forge-std/console2.sol';
 
 // BROADCAST
-// source .env && forge script DeployRethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY --account defaultKey --sender $DEFAULT_KEY_PUBLIC_ADDRESS
+// source .env && forge script DeployRethPtToSyPendleRelayerMainnet rtEthOracles --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --broadcast --verify --etherscan-api-key $ARB_ETHERSCAN_API_KEY --account defaultKey --sender $DEFAULT_KEY_PUBLIC_ADDRESS
 // SIMULATE
-// source .env && forge script DeployRethPtToSyPendleRelayerMainnet --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --account defaultKey --sender $DEFAULT_KEY_PUBLIC
+// source .env && forge script DeployRethPtToSyPendleRelayerMainnet rtEthOracles --with-gas-price 2000000000 -vvvvv --rpc-url $ARB_MAINNET_RPC --account defaultKey --sender $DEFAULT_KEY_PUBLIC
 contract DeployRethPtToSyPendleRelayerMainnet is CommonMainnet {
   function run() public {
     vm.startBroadcast();
