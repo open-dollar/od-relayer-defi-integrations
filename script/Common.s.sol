@@ -7,6 +7,8 @@ import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {ChainlinkRelayerFactory} from '@contracts/factories/ChainlinkRelayerFactory.sol';
 import {DenominatedOracleFactory} from '@contracts/factories/DenominatedOracleFactory.sol';
 import {PendleRelayerFactory} from '@contracts/factories/pendle/PendleRelayerFactory.sol';
+import {GmxRelayerFactory} from '@contracts/factories/gmx/GmxRelayerFactory.sol';
+import {OracleRegistry} from '@contracts/oracles/OracleRegistry.sol';
 import {IDelayedOracleFactory} from '@interfaces/factories/IDelayedOracleFactory.sol';
 
 abstract contract CommonMainnet is Script {
@@ -14,7 +16,9 @@ abstract contract CommonMainnet is Script {
   DenominatedOracleFactory public denominatedOracleFactory =
     DenominatedOracleFactory(MAINNET_DENOMINATED_ORACLE_FACTORY);
   PendleRelayerFactory public pendleRelayerFactory = PendleRelayerFactory(MAINNET_PENDLE_RELAYER_FACTORY);
+  GmxRelayerFactory public gmxRelayerFactory = GmxRelayerFactory(MAINNET_GMX_RELAYER_FACTORY);
   IDelayedOracleFactory public delayedOracleFactory = IDelayedOracleFactory(MAINNET_DELAYED_ORACLE_FACTORY);
+  OracleRegistry public oracleRegistry = OracleRegistry(MAINNET_ORACLE_REGISTRY);
 }
 
 abstract contract CommonSepolia is Script {
